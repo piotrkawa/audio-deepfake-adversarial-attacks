@@ -1,0 +1,29 @@
+data:
+  seed: 42
+  cnn_features_setting:
+    frontend_algorithm: []  # ["mfcc"] or ["lfcc"] or ["mfcc", "lfcc"] or []
+    use_spectrogram: False
+  adversarial_attacks: ["FGSM", "FGSM_eps00075", "FGSM_eps001"]
+
+checkpoint:
+  paths: [
+    "../trained_models/aad__frontend_lcnn_fold_-1__1665325273.8663843/ckpt.pth"
+  ]
+
+model:
+  name: "frontend_lcnn"
+  parameters:
+    frontend_algorithm: ["lfcc"]
+    input_channels: 1
+  optimizer:
+    lr: 0.0001
+
+logging:
+ log_metrics: True
+ existing_experiment_id: ""  # specify if you want to continue certain neptune experiment
+ name: "LCNN Adversarial Training - FGSM attacks"
+ description: ""
+ tags: ["no_fold"]
+
+
+

@@ -1,0 +1,85 @@
+---
+# LCNN
+# - attack: "NO_ATTACK"
+#   config: configs/frontend_lcnn.yaml
+#   attack_model_config: configs/frontend_lcnn.yaml
+
+- attack: "FGSM"
+  config: configs/frontend_lcnn.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+- attack: "FGSM_eps00075"
+  config: configs/frontend_lcnn.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+- attack: "FGSM_eps001"
+  config: configs/frontend_lcnn.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+- attack: "PGDL2"
+  config: configs/frontend_lcnn.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+- attack: "PGDL2_eps15"
+  config: configs/frontend_lcnn.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+- attack: "PGDL2_eps20"
+  config: configs/frontend_lcnn.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+- attack: "FAB"
+  config: configs/frontend_lcnn.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+- attack: "FAB_eta20"
+  config: configs/frontend_lcnn.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+- attack: "FAB_eta30"
+  config: configs/frontend_lcnn.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+
+# RawNet3
+# - attack: "NO_ATTACK"
+#   config: configs/rawnet3.yaml
+#   attack_model_config: configs/rawnet3.yaml
+
+# - attack: "PGDL2"
+#   config: configs/rawnet3.yaml
+#   attack_model_config: configs/rawnet3.yaml
+
+# - attack: "PGDL2_eps15"
+#   config: configs/rawnet3.yaml
+#   attack_model_config: configs/rawnet3.yaml
+
+# - attack: "PGDL2_eps20"
+#   config: configs/rawnet3.yaml
+#   attack_model_config: configs/rawnet3.yaml
+
+# - attack: "FGSM"
+#   config: configs/rawnet3.yaml
+#   attack_model_config: configs/rawnet3.yaml
+
+# - attack: "FGSM_eps00075"
+#   config: configs/rawnet3.yaml
+#   attack_model_config: configs/rawnet3.yaml
+
+# - attack: "FGSM_eps001"
+#   config: configs/rawnet3.yaml
+#   attack_model_config: configs/rawnet3.yaml
+
+# - attack: "FAB"
+#   config: configs/rawnet3.yaml
+#   attack_model_config: configs/rawnet3.yaml
+
+# - attack: "FAB_eta20"
+#   config: configs/rawnet3.yaml
+#   attack_model_config: configs/rawnet3.yaml
+
+# - attack: "FAB_eta30"
+#   config: configs/rawnet3.yaml
+#   attack_model_config: configs/rawnet3.yaml
+
+

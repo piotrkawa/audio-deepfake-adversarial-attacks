@@ -1,0 +1,81 @@
+---
+# PGDL2
+- attack: "PGDL2"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_specrnet.yaml
+
+- attack: "PGDL2"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+# FGSM
+- attack: "FGSM"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_specrnet.yaml
+
+- attack: "FGSM"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+# FAB
+- attack: "FAB"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_specrnet.yaml
+
+- attack: "FAB"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+# PGDL2_eps15
+- attack: "PGDL2_eps15"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_specrnet.yaml
+
+- attack: "PGDL2_eps15"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+# PGDL2_eps20
+- attack: "PGDL2_eps20"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_specrnet.yaml
+
+- attack: "PGDL2_eps20"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+# FGSM_eps00075
+- attack: "FGSM_eps00075"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_specrnet.yaml
+
+- attack: "FGSM_eps00075"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+# FGSM_eps001
+- attack: "FGSM_eps001"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_specrnet.yaml
+
+- attack: "FGSM_eps001"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+# FAB_eta20
+- attack: "FAB_eta20"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_specrnet.yaml
+
+- attack: "FAB_eta20"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_lcnn.yaml
+
+# FAB_eta30
+- attack: "FAB_eta30"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_specrnet.yaml
+
+- attack: "FAB_eta30"
+  config: configs/rawnet3.yaml
+  attack_model_config: configs/frontend_lcnn.yaml

@@ -1,0 +1,20 @@
+checkpoint:
+  paths:
+  - /home/mplata/repos/aad-plus-plus/adversarial_attacks_generator/trained_models/aad__frontend_lcnn_fold_-1__1665611619.8004057/ckpt.pth
+data:
+  adversarial_attacks:
+  - FGSM
+  - FGSM_eps00075
+  - FGSM_eps001
+  cnn_features_setting:
+    frontend_algorithm: []
+    use_spectrogram: false
+  seed: 42
+model:
+  name: frontend_lcnn
+  optimizer:
+    lr: 1.0e-05
+  parameters:
+    frontend_algorithm:
+    - lfcc
+    input_channels: 1
