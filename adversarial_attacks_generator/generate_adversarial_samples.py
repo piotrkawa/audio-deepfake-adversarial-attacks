@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import List, Union, Dict, Optional, Any, Callable
 from pathlib import Path
 import logging
-import sys
 
 import numpy as np
 import yaml

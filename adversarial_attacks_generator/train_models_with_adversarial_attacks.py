@@ -14,7 +14,6 @@ import yaml
 
 from dfadetect.agnostic_datasets.attack_agnostic_dataset import AttackAgnosticDataset, NoFoldDataset
 from adversarial_attacks_generator.adversarial_training_types import AdversarialGDTrainerEnum
-from dfadetect.cnn_features import CNNFeaturesSetting
 from dfadetect.models import models
 from dfadetect.trainer import save_model
 from dfadetect.utils import set_seed
@@ -83,7 +82,6 @@ def train_nn(
     device: str,
     config: Dict,
     attack_config: Optional[Dict],
-    cnn_features_setting: CNNFeaturesSetting,
     adversarial_attacks: List[str],
     model_dir: Optional[Path] = None,
     amount_to_use: Optional[int] = None,
@@ -158,9 +156,7 @@ def train_nn(
             model=current_model,
             attack_model=attack_model,
             test_dataset=data_test,
-            nn_data_setting=nn_data_setting,
             logging_prefix=f"fold_{fold}",
-            cnn_features_setting=cnn_features_setting,
             adversarial_attacks=adversarial_attacks,
             model_dir=model_dir,
             save_model_name=save_name
@@ -210,12 +206,6 @@ def main(args):
     model_dir = Path(args.ckpt)
     model_dir.mkdir(parents=True, exist_ok=True)
 
-    cnn_features_setting = config["data"].get("cnn_features_setting", None)
-    if cnn_features_setting:
-        cnn_features_setting = CNNFeaturesSetting(**cnn_features_setting)
-    else:
-        cnn_features_setting = CNNFeaturesSetting()
-
     train_nn(
         datasets_paths=[args.asv_path, args.wavefake_path, args.celeb_path],
         device=device,
@@ -225,7 +215,6 @@ def main(args):
         model_dir=model_dir,
         config=config,
         attack_config=attack_model_config,
-        cnn_features_setting=cnn_features_setting,
         adversarial_attacks=config["data"].get("adversarial_attacks", []),
         no_fold=args.no_fold,
         adv_training_strategy=args.adv_training_strategy,

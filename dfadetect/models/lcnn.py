@@ -8,14 +8,14 @@ import torch
 import torch.nn as torch_nn
 
 try:
-    from dfadetect import cnn_features
+    from dfadetect import frontends
 except:
     import os
     import inspect
     currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     parentdir = os.path.dirname(currentdir)
     sys.path.insert(0, parentdir)
-    import cnn_features
+    import frontends
     # TODO(PK): current implementation works only on CUDA
 
 
@@ -226,7 +226,7 @@ class LCNN(BaseLCNN):
         self.device = device
 
         frontend_name = kwargs.get("frontend_algorithm", [])
-        self.frontend = cnn_features.get_frontend(frontend_name)
+        self.frontend = frontends.get_frontend(frontend_name)
         print(f"Using {frontend_name} frontend")
 
     def _compute_frontend(self, x):

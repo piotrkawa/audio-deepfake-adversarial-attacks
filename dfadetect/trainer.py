@@ -1,12 +1,9 @@
 """A generic training wrapper."""
 from copy import deepcopy
-from dataclasses import dataclass
 import random
 import logging
-import math
 import numpy as np
 from typing import Callable, List, Optional, Union
-from unittest.mock import MagicMock
 from pathlib import Path
 import functools
 
@@ -15,7 +12,6 @@ from torch.utils.data import DataLoader
 
 from adversarial_attacks_generator import utils
 from adversarial_attacks_generator.attacks import AttackEnum
-from dfadetect import cnn_features
 
 LOGGER = logging.getLogger(__name__)
 
@@ -29,10 +25,10 @@ def save_model(
     full_model_dir = Path(f"{model_dir}/{name}")
     full_model_dir.mkdir(parents=True, exist_ok=True)
     if epoch is not None:
-        epoch = f"_{epoch:02d}"
+        epoch_str = f"_{epoch:02d}"
     else:
-        epoch = ""
-    torch.save(model.state_dict(), f"{full_model_dir}/ckpt{epoch}.pth")
+        epoch_str = ""
+    torch.save(model.state_dict(), f"{full_model_dir}/ckpt{epoch_str}.pth")
     LOGGER.info(f"Training model saved under: {full_model_dir}/ckpt{epoch}.pth")
 
 
@@ -228,7 +224,6 @@ class AdversarialGDTrainer(Trainer):
         dataset: torch.utils.data.Dataset,
         model: torch.nn.Module,
         attack_model: torch.nn.Module,
-        cnn_features_setting: cnn_features.CNNFeaturesSetting,
         adversarial_attacks: List[str],
         test_len: Optional[float] = None,
         test_dataset: Optional[torch.utils.data.Dataset] = None,
@@ -349,7 +344,6 @@ class AdversarialGDTrainer(Trainer):
                 model=model,
                 criterion=criterion,
                 test_loader=test_loader,
-                cnn_features_setting=cnn_features_setting,
                 attack=None,
             )
             test_acc_results = [test_acc / 100]
@@ -375,7 +369,6 @@ class AdversarialGDTrainer(Trainer):
                     model=model,
                     criterion=criterion,
                     test_loader=test_loader,
-                    cnn_features_setting=cnn_features_setting,
                     attack=attack_method,
                 )
                 test_acc_results.append(adv_test_acc / 100)
@@ -412,7 +405,6 @@ class AdversarialGDTrainer(Trainer):
         self,
         model,
         test_loader,
-        cnn_features_setting,
         criterion,
         attack: Optional[Callable],
     ):

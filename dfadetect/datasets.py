@@ -1,14 +1,12 @@
 """Common preprocessing functions for audio data."""
-import functools
 import logging
 from pathlib import Path
-from typing import Callable, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import torch
 import torchaudio
 from torchaudio.functional import apply_codec
 
-from dfadetect.lfcc import LFCC
 from dfadetect.utils import find_wav_files
 
 LOGGER = logging.getLogger(__name__)
@@ -159,88 +157,4 @@ class PadDataset(torch.utils.data.Dataset):
 
     def __len__(self):
         return len(self.dataset)
-
-
-class TransformDataset(torch.utils.data.Dataset):
-    """A generic transformation dataset.
-
-    Takes another dataset as input, which provides the base input.
-    When retrieving an item from the dataset, the provided transformation gets applied.
-
-    Args:
-        dataset: A dataset which return a (waveform, sample_rate)-pair.
-        transformation: The torchaudio transformation to use.
-        needs_sample_rate: Does the transformation need the sampling rate?
-        transform_kwargs: Kwargs for the transformation.
-    """
-
-    def __init__(
-            self,
-            dataset: torch.utils.data.Dataset,
-            transformation: Callable,
-            needs_sample_rate: bool = False,
-            transform_kwargs: dict = {},
-    ) -> None:
-        super().__init__()
-        self._dataset = dataset
-
-        self._transform_constructor = transformation
-        self._needs_sample_rate = needs_sample_rate
-        self._transform_kwargs = transform_kwargs
-
-        self._transform = None
-
-    def __len__(self):
-        return len(self._dataset)
-
-    def __getitem__(self, index: int) -> Tuple[torch.Tensor, int]:
-        waveform, sample_rate = self._dataset[index]
-
-        if self._transform is None:
-            if self._needs_sample_rate:
-                self._transform = self._transform_constructor(
-                    sample_rate, **self._transform_kwargs)
-            else:
-                self._transform = self._transform_constructor(
-                    **self._transform_kwargs)
-
-        return self._transform(waveform), sample_rate
-
-
-# =====================================================================
-# Helper functions.
-# =====================================================================
-
-
-def _build_preprocessing(
-        directory_or_audiodataset: Union[Union[str, Path], AudioDataset],
-        transform: torch.nn.Module,
-        audiokwargs: dict = {},
-        transformkwargs: dict = {},
-) -> TransformDataset:
-    import dfadetect.agnostic_datasets.attack_agnostic_dataset as aa_ds
-    """Generic function template for building preprocessing functions.
-    """
-    if (
-            isinstance(directory_or_audiodataset, AudioDataset)
-            or isinstance(directory_or_audiodataset, PadDataset)
-            or isinstance(directory_or_audiodataset, aa_ds.AttackAgnosticDataset)
-    ):
-        return TransformDataset(dataset=directory_or_audiodataset,
-                                transformation=transform,
-                                needs_sample_rate=True,
-                                transform_kwargs=transformkwargs)
-    elif isinstance(directory_or_audiodataset, str) or isinstance(directory_or_audiodataset, Path):
-        return TransformDataset(dataset=AudioDataset(directory=directory_or_audiodataset, **audiokwargs),
-                                transformation=transform,
-                                needs_sample_rate=True,
-                                transform_kwargs=transformkwargs)
-    else:
-        raise TypeError("Unsupported type for directory_or_audiodataset!")
-
-
-mfcc = functools.partial(_build_preprocessing,
-                         transform=torchaudio.transforms.MFCC)
-lfcc = functools.partial(_build_preprocessing, transform=LFCC)
-
 

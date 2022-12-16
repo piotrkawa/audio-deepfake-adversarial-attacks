@@ -9,7 +9,6 @@ import torch
 import yaml
 
 from dfadetect.agnostic_datasets.attack_agnostic_dataset import AttackAgnosticDataset, NoFoldDataset
-from dfadetect.cnn_features import CNNFeaturesSetting
 from dfadetect.models import models
 from dfadetect.trainer import GDTrainer
 from dfadetect.utils import set_seed
@@ -87,7 +86,6 @@ def train_nn(
     epochs: int,
     device: str,
     config: Dict,
-    cnn_features_setting: CNNFeaturesSetting,
     model_dir: Optional[Path] = None,
     amount_to_use: Optional[int] = None,
     no_fold: bool = False,
@@ -131,9 +129,7 @@ def train_nn(
             dataset=data_train,
             model=current_model,
             test_dataset=data_test,
-            nn_data_setting=nn_data_setting,
             logging_prefix=f"fold_{fold}",
-            cnn_features_setting=cnn_features_setting,
         )
 
         if model_dir is not None:
@@ -177,12 +173,6 @@ def main(args):
     model_dir = Path(args.ckpt)
     model_dir.mkdir(parents=True, exist_ok=True)
 
-    cnn_features_setting = config["data"].get("cnn_features_setting", None)
-    if cnn_features_setting:
-        cnn_features_setting = CNNFeaturesSetting(**cnn_features_setting)
-    else:
-        cnn_features_setting = CNNFeaturesSetting()
-
     train_nn(
         datasets_paths=[args.asv_path, args.wavefake_path, args.celeb_path],
         device=device,
@@ -191,7 +181,6 @@ def main(args):
         epochs=args.epochs,
         model_dir=model_dir,
         config=config,
-        cnn_features_setting=cnn_features_setting,
         no_fold=args.no_fold,
     )
 
