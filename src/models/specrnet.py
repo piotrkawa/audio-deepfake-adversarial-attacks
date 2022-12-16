@@ -2,7 +2,7 @@
 This file contains implementation of SpecRNet architecture.
 The original codebase is available here https://github.com/piotrkawa/specrnet/blob/main/model.py.
 """
-fromt typing import Dict
+from typing import Dict
 
 import torch
 import torch.nn as nn
@@ -20,7 +20,6 @@ except:
 
     # TODO(PK): current implementation works only on CUDA
 
-
 def get_config(input_channels: int) -> Dict:
     return {
         "filts": [input_channels, [input_channels, 20], [20, 64], [64, 64]],
@@ -29,8 +28,6 @@ def get_config(input_channels: int) -> Dict:
         "nb_gru_layer": 2,
         "nb_classes": 1,
     }
-
-
 
 class Residual_block2D(nn.Module):
     def __init__(self, nb_filts, first=False):

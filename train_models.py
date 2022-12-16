@@ -143,7 +143,6 @@ def train_nn(
             checkpoint_paths.append(str(model_dir.resolve() / save_name / "ckpt.pth"))
 
         LOGGER.info(f"Training model on fold [{fold+1}/{len(folds)}] done!")
-    metrics_logger[f"parameters/data/save_paths"] = checkpoint_paths
 
     # Save config for testing
     if model_dir is not None:
@@ -152,7 +151,6 @@ def train_nn(
         config_save_path = str(Path(config_save_path) / config_name)
         with open(config_save_path, "w") as f:
             yaml.dump(config, f)
-        metrics_logger["source_code/config"].upload(config_save_path)
         LOGGER.info(f"Test config saved at location '{config_save_path}'!")
 
 
