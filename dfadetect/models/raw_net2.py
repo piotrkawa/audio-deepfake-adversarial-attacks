@@ -352,7 +352,6 @@ class RawNet(nn.Module):
 
 
 
-
 if __name__ == "__main__":
     RAW_NET_CONFIG = {
         "nb_samp": 64600,

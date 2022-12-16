@@ -5,15 +5,13 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
-import neptune.new as neptune
 import torch
 import yaml
 
 from dfadetect.agnostic_datasets.attack_agnostic_dataset import AttackAgnosticDataset, NoFoldDataset
 from dfadetect.cnn_features import CNNFeaturesSetting
 from dfadetect.models import models
-from dfadetect import neptune_utils
-from dfadetect.trainer import GDTrainer, NNDataSetting
+from dfadetect.trainer import GDTrainer
 from dfadetect.utils import set_seed
 
 LOGGER = logging.getLogger()
@@ -90,7 +88,6 @@ def train_nn(
     device: str,
     config: Dict,
     cnn_features_setting: CNNFeaturesSetting,
-    metrics_logger: neptune.metadata_containers.run.Run,
     model_dir: Optional[Path] = None,
     amount_to_use: Optional[int] = None,
     no_fold: bool = False,
@@ -102,11 +99,6 @@ def train_nn(
     model_name, model_parameters = model_config["name"], model_config["parameters"]
     optimizer_config = model_config["optimizer"]
 
-    use_cnn_features = False if model_name in ["rawnet", "rawnet3", "frontend_lcnn", "frontend_specrnet"] else True
-
-    nn_data_setting = NNDataSetting(
-        use_cnn_features=use_cnn_features,
-    )
     timestamp = time.time()
     checkpoint_paths = []
     folds = [0, 1, 2] if not no_fold else [-1]
@@ -140,7 +132,6 @@ def train_nn(
             model=current_model,
             test_dataset=data_test,
             nn_data_setting=nn_data_setting,
-            logger=metrics_logger,
             logging_prefix=f"fold_{fold}",
             cnn_features_setting=cnn_features_setting,
         )
@@ -178,27 +169,6 @@ def main(args):
     # fix all seeds
     set_seed(seed)
 
-    # TODO(PK): this can be extracted to some method
-    try:
-        from neptune.new.integrations.python_logger import NeptuneHandler
-
-        neptune_instance = neptune_utils.get_metric_logger(
-            should_log_metrics=config["logging"]["log_metrics"], config=config
-        )
-        npt_handler = NeptuneHandler(run=neptune_instance)
-        LOGGER.addHandler(npt_handler)
-    except Exception as e:
-        LOGGER.info(e)
-        from unittest.mock import MagicMock
-
-        LOGGER.info("Neptune not initialized - using mocked logger!")
-        neptune_instance = MagicMock()
-    neptune_instance["parameters/batch_size"] = args.batch_size
-    neptune_instance["parameters/epochs"] = args.epochs
-    neptune_instance["sys/tags"].add(config["model"]["name"])
-    neptune_instance["sys/tags"].add("training")
-    neptune_instance["source_code/config"].upload(args.config)
-
     if not args.cpu and torch.cuda.is_available():
         device = "cuda"
     else:
@@ -218,7 +188,6 @@ def main(args):
         device=device,
         amount_to_use=args.amount,
         batch_size=args.batch_size,
-        metrics_logger=neptune_instance,
         epochs=args.epochs,
         model_dir=model_dir,
         config=config,

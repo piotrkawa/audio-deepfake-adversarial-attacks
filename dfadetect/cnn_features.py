@@ -1,3 +1,4 @@
+# TODO: rename this module
 from dataclasses import dataclass, field
 from typing import List, Union, Callable, Tuple
 
@@ -49,7 +50,6 @@ MEL_SCALE_FN = torchaudio.transforms.MelScale(
 def get_frontend(
     frontends: List[str],
 ) -> Union[torchaudio.transforms.MFCC, torchaudio.transforms.LFCC, Callable,]:
-    # TODO(PK): support multiuple frontends
     if "mfcc" in frontends:
         return MFCC_FN
     elif "lfcc" in frontends:

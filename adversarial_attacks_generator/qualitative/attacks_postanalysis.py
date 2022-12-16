@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -10,6 +11,7 @@ from mel_cepstral_distance import get_metrics_wavs
 print(plt.style.available)
 plt.style.use('ggplot')
 
+LOGGER = logging.getLogger()
 
 class AttackPostAnalyser:
 
@@ -106,7 +108,7 @@ class AttackPostAnalyser:
             try:
                 distance, penalty, frames = get_metrics_wavs(Path(path), Path(att_path))
             except:
-                print("ERROR")
+                LOGGER.info("ERROR")
                 continue
             mcd_results.append(distance)
 
@@ -123,7 +125,7 @@ class AttackPostAnalyser:
         mcd_csv_data = np.expand_dims(mcd_csv_data, 0)
         mcd_csv_data = pd.DataFrame(mcd_csv_data, columns=["mean", "std", "min", "max"])
         mcd_csv_data.to_csv(path.parent / "mcd_metrics.csv")
-        print("MCD: ", mcd_results.mean(), mcd_results.std(), mcd_results.min(), mcd_results.max())
+        LOGGER.info("MCD: {}, {}, {}, {}".format(mcd_results.mean(), mcd_results.std(), mcd_results.min(), mcd_results.max()))
         return results
 
 
@@ -158,4 +160,4 @@ if __name__ == "__main__":
         analyser = AttackPostAnalyser(result_dst=res)
         # analyser.read_waves_and_plot()
         r = analyser.read_waves_and_calc_metrics()
-        print(np.mean(r["mock_original"]))
+        LOGGER.info(np.mean(r["mock_original"]))

@@ -1,8 +1,9 @@
 """
 This file contains implementation of SpecRNet architecture.
-We base our codebase on the implementation of RawNet2 by Hemlata Tak (tak@eurecom.fr).
-It is available here: https://github.com/asvspoof-challenge/2021/blob/main/LA/Baseline-RawNet2/model.py
+The original codebase is available here https://github.com/piotrkawa/specrnet/blob/main/model.py.
 """
+fromt typing import Dict
+
 import torch
 import torch.nn as nn
 
@@ -17,6 +18,18 @@ except:
     sys.path.insert(0, parentdir)
     import cnn_features
     # TODO(PK): current implementation works only on CUDA
+
+
+def get_config(input_channels: int) -> Dict:
+    return {
+        "filts": [input_channels, [input_channels, 20], [20, 64], [64, 64]],
+        "nb_fc_node": 64,
+        "gru_node": 64,
+        "nb_gru_layer": 2,
+        "nb_classes": 1,
+    }
+
+
 
 class Residual_block2D(nn.Module):
     def __init__(self, nb_filts, first=False):
@@ -80,7 +93,7 @@ class Residual_block2D(nn.Module):
         return out
 
 
-class SpecRNet(nn.Module):
+class BaseSpecRNet(nn.Module):
     def __init__(self, d_args, **kwargs):
         super().__init__()
 
@@ -179,7 +192,7 @@ class SpecRNet(nn.Module):
         return nn.Sequential(*l_fc)
 
 
-class FrontendSpecRNet(SpecRNet):
+class SpecRNet(BaseSpecRNet):
     def __init__(self, d_args, **kwargs):
         super().__init__(d_args, **kwargs)
 
@@ -216,7 +229,7 @@ if __name__ == "__main__":
         "nb_classes": 1,
     }
 
-    model = FrontendSpecRNet(config, device=device, frontend_algorithm=["lfcc"])
+    model = SpecRNet(config, device=device, frontend_algorithm=["lfcc"])
     model = model.to(device)
     batch_size = 12
     mock_input = torch.rand(

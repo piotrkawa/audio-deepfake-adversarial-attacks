@@ -98,7 +98,7 @@ class MaxFeatureMap2D(torch_nn.Module):
 ## FOR MODEL
 ##############
 
-class LCNN(torch_nn.Module):
+class BaseLCNN(torch_nn.Module):
     """ Model definition
     """
     def __init__(self, **kwargs):
@@ -217,7 +217,7 @@ class LCNN(torch_nn.Module):
 
 
 
-class FrontendLCNN(LCNN):
+class LCNN(BaseLCNN):
     """ Model definition
     """
     def __init__(self, device: str = "cuda", **kwargs):
@@ -254,7 +254,7 @@ if __name__ == "__main__":
 
 
     print("Definition of model")
-    model = FrontendLCNN(input_channels=2, num_coefficients=80, device=device, frontend_algorithm=["mel_spec"])
+    model = LCNN(input_channels=2, num_coefficients=80, device=device, frontend_algorithm=["mel_spec"])
     model = model.to(device)
     batch_size = 12
     mock_input = torch.rand((batch_size, 64_600,), device=device)

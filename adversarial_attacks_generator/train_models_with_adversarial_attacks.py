@@ -16,8 +16,7 @@ from dfadetect.agnostic_datasets.attack_agnostic_dataset import AttackAgnosticDa
 from adversarial_attacks_generator.adversarial_training_types import AdversarialGDTrainerEnum
 from dfadetect.cnn_features import CNNFeaturesSetting
 from dfadetect.models import models
-from dfadetect import neptune_utils
-from dfadetect.trainer import NNDataSetting, save_model
+from dfadetect.trainer import save_model
 from dfadetect.utils import set_seed
 
 LOGGER = logging.getLogger()
@@ -85,7 +84,6 @@ def train_nn(
     config: Dict,
     attack_config: Optional[Dict],
     cnn_features_setting: CNNFeaturesSetting,
-    metrics_logger,
     adversarial_attacks: List[str],
     model_dir: Optional[Path] = None,
     amount_to_use: Optional[int] = None,
@@ -98,12 +96,8 @@ def train_nn(
     model_config = config["model"]
     model_name = model_config["name"]
     optimizer_config = model_config["optimizer"]
-    use_cnn_features = False if model_name in ["rawnet", "rawnet3", "frontend_lcnn", "frontend_specrnet"] else True
 
     LOGGER.info("Loading data...")
-    nn_data_setting = NNDataSetting(
-        use_cnn_features=use_cnn_features,
-    )
 
     timestamp = time.time()
     checkpoint_paths = []
@@ -165,7 +159,6 @@ def train_nn(
             attack_model=attack_model,
             test_dataset=data_test,
             nn_data_setting=nn_data_setting,
-            logger=metrics_logger,
             logging_prefix=f"fold_{fold}",
             cnn_features_setting=cnn_features_setting,
             adversarial_attacks=adversarial_attacks,
@@ -182,7 +175,6 @@ def train_nn(
             checkpoint_paths.append(str(model_dir.resolve() / save_name / "ckpt.pth"))
 
         LOGGER.info(f"Training model on fold [{fold+1}/{len(folds)}] done!")
-    metrics_logger[f"parameters/data/save_paths"] = checkpoint_paths
 
     # Save config for testing
     if model_dir is not None:
@@ -191,7 +183,6 @@ def train_nn(
         config_save_path = str(Path(config_save_path) / config_name)
         with open(config_save_path, "w") as f:
             yaml.dump(config, f)
-        metrics_logger["source_code/config"].upload(config_save_path)
         LOGGER.info(f"Test config saved at location '{config_save_path}'!")
 
 
@@ -210,8 +201,6 @@ def main(args):
     seed = config["data"].get("seed", 42)
     # fix all seeds
     set_seed(seed)
-
-    neptune_instance = neptune_init(args=args, config=config, attack_model_config=attack_model_config)
 
     if not args.cpu and torch.cuda.is_available():
         device = "cuda"
@@ -232,7 +221,6 @@ def main(args):
         device=device,
         amount_to_use=args.amount,
         batch_size=args.batch_size,
-        metrics_logger=neptune_instance,
         epochs=args.epochs,
         model_dir=model_dir,
         config=config,
@@ -248,7 +236,6 @@ def main(args):
 def load_model(model_config, fold: int = 0, device: str = "cuda"):
     model_name, model_parameters = model_config["model"]["name"], model_config["model"]["parameters"]
     model_paths = model_config["checkpoint"].get("paths", [])
-    use_cnn_features = False if model_name in ["rawnet", "rawnet3", "frontend_lcnn", "frontend_specrnet"] else True
 
     model = models.get_model(
         model_name=model_name, config=model_parameters, device=device,
@@ -265,7 +252,6 @@ def load_model(model_config, fold: int = 0, device: str = "cuda"):
         )
         LOGGER.info("Loaded weigths on '%s' model, path: %s", model_name, weights_path)
     model = model.to(device)
-    model.use_cnn_features = use_cnn_features
     model.weights_path = weights_path
 
     return model
@@ -372,51 +358,6 @@ def parse_args():
     )
 
     return parser.parse_args()
-
-
-def neptune_init(args, config: Dict, attack_model_config: Optional[Dict]):
-    try:
-        from neptune.new.integrations.python_logger import NeptuneHandler
-
-        neptune_instance = neptune_utils.get_metric_logger(
-            should_log_metrics=config["logging"]["log_metrics"],
-            config=config,
-            api_token_path="../configs/tokens/neptune_api_token",
-        )
-        npt_handler = NeptuneHandler(run=neptune_instance)
-        LOGGER.addHandler(npt_handler)
-    except Exception as e:
-        LOGGER.info(e)
-        from unittest.mock import MagicMock
-
-        LOGGER.info("Neptune not initialized - using mocked logger!")
-        neptune_instance = MagicMock()
-
-    neptune_instance["sys/tags"].add(config["model"]["name"])
-    neptune_instance["sys/tags"].add("adversarial_training")
-    if args.finetune:
-        neptune_instance["sys/tags"].add("adversarial_finetune")
-    seed_name = f"seed_{config['data'].get('seed', '?')}"
-
-    neptune_instance["sys/tags"].add(seed_name)
-    neptune_instance["source_code/config"].upload(args.config)
-
-    data_frontend = config['data']['cnn_features_setting']['frontend_algorithm']
-    if data_frontend:
-        # if it is network where we process data before inputting
-        neptune_instance["sys/tags"].upload(data_frontend[0])
-    else:
-        data_frontend = config['model']['parameters'].get('frontend_algorithm', None)
-        if data_frontend:
-            neptune_instance["sys/tags"].add(data_frontend[0])
-        else:
-            neptune_instance["sys/tags"].add('raw_audio')
-
-    if attack_model_config is not None:
-        neptune_instance["source_code/attack_model_config"].upload(args.attack_model_config)
-        neptune_instance["sys/tags"].add(f"attack__{attack_model_config['model']['name']}")
-
-    return neptune_instance
 
 
 if __name__ == "__main__":

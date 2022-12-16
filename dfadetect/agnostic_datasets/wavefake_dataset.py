@@ -162,7 +162,3 @@ if __name__ == "__main__":
     assert len(set(paths_0).intersection(set(paths_2))) == 0, "duplicated paths"
 
     print("All correct!")
-
-    # TODO(PK): points to fulfill
-    # [ ] each attack type should be present in each subset
-    # [x] no duplicates

@@ -84,7 +84,7 @@ class AttackAnalyser:
         )
         # the above operation generates tuple (not sure why)
         false_positives = false_positives[0]
-        print("false_positives:", false_positives)
+        LOGGER.info("false_positives: {}".format(false_positives))
         self.save_waves(false_positives, batch_x, batch_x_attacked, batch_metadata, "fp")
 
     def save_false_negatives(
@@ -105,7 +105,7 @@ class AttackAnalyser:
         )
         # the above operation generates tuple (not sure why)
         false_negatives = false_negatives[0]
-        print("false_negatives:", false_negatives)
+        LOGGER.info("false_negatives: {}".format(false_negatives))
         self.save_waves(false_negatives, batch_x, batch_x_attacked, batch_metadata, "fn")
 
     def save_waves(self, false_samples, batch_x, batch_x_attacked, batch_metadata, suffix):

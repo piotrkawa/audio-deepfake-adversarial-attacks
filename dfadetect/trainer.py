@@ -10,7 +10,6 @@ from unittest.mock import MagicMock
 from pathlib import Path
 import functools
 
-import neptune.new as neptune
 import torch
 from torch.utils.data import DataLoader
 
@@ -35,11 +34,6 @@ def save_model(
         epoch = ""
     torch.save(model.state_dict(), f"{full_model_dir}/ckpt{epoch}.pth")
     LOGGER.info(f"Training model saved under: {full_model_dir}/ckpt{epoch}.pth")
-
-
-@dataclass
-class NNDataSetting:
-    use_cnn_features: bool
 
 
 class Trainer():
@@ -86,10 +80,7 @@ class GDTrainer(Trainer):
         self,
         dataset: torch.utils.data.Dataset,
         model: torch.nn.Module,
-        nn_data_setting: NNDataSetting,
-        cnn_features_setting: cnn_features.CNNFeaturesSetting,
         test_len: Optional[float] = None,
-        logger: Union[neptune.metadata_containers.run.Run, MagicMock] = None,
         test_dataset: Optional[torch.utils.data.Dataset] = None,
         logging_prefix: str = "",
     ):
@@ -149,14 +140,10 @@ class GDTrainer(Trainer):
             for i, (batch_x, _, batch_y) in enumerate(train_loader):
                 if i % 50 == 0:
                     lr = scheduler.get_last_lr()[0] if self.use_scheduler else self.optimizer_kwargs["lr"]
-                    logger["train/lr"].log(lr)
 
                 batch_size = batch_x.size(0)
                 num_total += batch_size
                 batch_x = batch_x.to(self.device)
-
-                # if nn_data_setting.use_cnn_features:
-                #     batch_x = cnn_features.prepare_feature_vector(batch_x, cnn_features_setting=cnn_features_setting)
 
                 batch_y = batch_y.unsqueeze(1).type(torch.float32).to(self.device)
 
@@ -180,8 +167,6 @@ class GDTrainer(Trainer):
             train_accuracy = (num_correct / num_total) * 100
 
             LOGGER.info(f"Epoch [{epoch+1}/{self.epochs}]: train/{logging_prefix}__loss: {running_loss}, train/{logging_prefix}__accuracy: {train_accuracy}")
-            logger[f"train/{logging_prefix}__loss"].log(running_loss)
-            logger[f"train/{logging_prefix}__accuracy"].log(train_accuracy)
 
             test_running_loss = 0.0
             num_correct = 0.0
@@ -189,17 +174,10 @@ class GDTrainer(Trainer):
             model.eval()
             eer_val = 0
 
-            # y_pred = torch.Tensor([]).to("cpu")
-            # y = torch.Tensor([]).to("cpu")
-            # y_pred_label = torch.Tensor([]).to("cpu")
-
             for batch_x, _, batch_y in test_loader:
                 batch_size = batch_x.size(0)
                 num_total += batch_size
                 batch_x = batch_x.to(self.device)
-
-                # if nn_data_setting.use_cnn_features:
-                #     batch_x = cnn_features.prepare_feature_vector(batch_x, cnn_features_setting=cnn_features_setting)
 
                 with torch.no_grad():
                     batch_pred = model(batch_x)
@@ -220,9 +198,6 @@ class GDTrainer(Trainer):
             test_acc = 100 * (num_correct / num_total)
             LOGGER.info(f"Epoch [{epoch+1}/{self.epochs}]: test/{logging_prefix}__loss: {test_running_loss}, test/{logging_prefix}__accuracy: {test_acc}, test/{logging_prefix}__eer: {eer_val}")
 
-            logger[f"test/{logging_prefix}__loss"].log(test_running_loss)
-            logger[f"test/{logging_prefix}__accuracy"].log(test_acc)
-
             if best_model is None or test_acc > best_acc:
                 best_acc = test_acc
                 best_model = deepcopy(model.state_dict())
@@ -240,7 +215,6 @@ class AdversarialGDTrainer(Trainer):
         super(AdversarialGDTrainer, self).__init__(*args, **kwargs)
 
         self.attacks = None
-        self.logger = None
         self.logging_prefix = None
 
     @staticmethod
@@ -254,17 +228,14 @@ class AdversarialGDTrainer(Trainer):
         dataset: torch.utils.data.Dataset,
         model: torch.nn.Module,
         attack_model: torch.nn.Module,
-        nn_data_setting: NNDataSetting,
         cnn_features_setting: cnn_features.CNNFeaturesSetting,
         adversarial_attacks: List[str],
         test_len: Optional[float] = None,
-        logger: Union[neptune.metadata_containers.run.Run, MagicMock] = None,
         test_dataset: Optional[torch.utils.data.Dataset] = None,
         logging_prefix: str = "",
         model_dir: Optional[str] = None,
         save_model_name: Optional[str] = None
     ):
-        self.logger = logger
         self.logging_prefix = logging_prefix
 
         if test_dataset is not None:
@@ -329,15 +300,12 @@ class AdversarialGDTrainer(Trainer):
             for i, (batch_x, _, batch_y) in enumerate(train_loader):
                 if i % 50 == 0:
                     lr = scheduler.get_last_lr()[0] if self.use_scheduler else self.optimizer_kwargs["lr"]
-                    logger["train/lr"].log(lr)
 
                 batch_size = batch_x.size(0)
                 num_total += batch_size
 
                 # Prepare input
                 batch_x = batch_x.to(self.device)
-                # if nn_data_setting.use_cnn_features:
-                #     batch_x = cnn_features.prepare_feature_vector(batch_x, cnn_features_setting=cnn_features_setting)
 
                 # Apply adversarial attack
                 batch_x = self.apply_adv_attack(batch_x, batch_y)
@@ -375,22 +343,17 @@ class AdversarialGDTrainer(Trainer):
 
             LOGGER.info(f"Epoch [{epoch+1}/{self.epochs}]: train/{logging_prefix}__loss: {running_loss}, "
                         f"train/{logging_prefix}__accuracy: {train_accuracy}")
-            logger[f"train/{logging_prefix}__loss"].log(running_loss)
-            logger[f"train/{logging_prefix}__accuracy"].log(train_accuracy)
 
             # Validation
             test_running_loss, test_acc, eer_val = self.validation_epoch(
                 model=model,
                 criterion=criterion,
                 test_loader=test_loader,
-                nn_data_setting=nn_data_setting,
                 cnn_features_setting=cnn_features_setting,
                 attack=None,
             )
             test_acc_results = [test_acc / 100]
 
-            logger[f"test/{logging_prefix}__loss"].log(test_running_loss)
-            logger[f"test/{logging_prefix}__accuracy"].log(test_acc)
             LOGGER.info(
                 f"Epoch [{epoch+1}/{self.epochs}]: test/{logging_prefix}__loss: {test_running_loss}, "
                 f"test/{logging_prefix}__accuracy: {test_acc}, test/{logging_prefix}__eer: {eer_val}"
@@ -412,14 +375,11 @@ class AdversarialGDTrainer(Trainer):
                     model=model,
                     criterion=criterion,
                     test_loader=test_loader,
-                    nn_data_setting=nn_data_setting,
                     cnn_features_setting=cnn_features_setting,
                     attack=attack_method,
                 )
                 test_acc_results.append(adv_test_acc / 100)
 
-                logger[f"adv_test/{logging_prefix}__{attack_name}__loss"].log(adv_test_running_loss)
-                logger[f"adv_test/{logging_prefix}__{attack_name}__accuracy"].log(adv_test_acc)
                 LOGGER.info(
                     f"Epoch [{epoch+1}/{self.epochs}]: adv_test/{logging_prefix}__{attack_name}__loss: {adv_test_running_loss},"
                     f" adv_test/{logging_prefix}__{attack_name}__accuracy: {adv_test_acc},"
@@ -452,7 +412,6 @@ class AdversarialGDTrainer(Trainer):
         self,
         model,
         test_loader,
-        nn_data_setting,
         cnn_features_setting,
         criterion,
         attack: Optional[Callable],
@@ -468,9 +427,6 @@ class AdversarialGDTrainer(Trainer):
             batch_size = batch_x.size(0)
             num_total += batch_size
             batch_x = batch_x.to(self.device)
-
-            # if nn_data_setting.use_cnn_features:
-            #     batch_x = cnn_features.prepare_feature_vector(batch_x, cnn_features_setting=cnn_features_setting)
 
             if attack:
                 batch_x, mn, mx = utils.to_minmax(batch_x)
@@ -603,7 +559,6 @@ class AdaptiveAdversarialGDTrainer(AdversarialGDTrainer):
 
         if iter is not None and iter % 100 == 0:
             LOGGER.info(f"[{epoch:04d}][{iter:05d}]: Adversarial attack weights: {self.adv_attacks_weights}")
-            self.logger[f"adv_test/{self.logging_prefix}__adversarial_attacks_weights"].log(self.adv_attacks_weights)
 
 
 class AdaptiveV2AdversarialGDTrainer(AdaptiveAdversarialGDTrainer):
@@ -623,4 +578,3 @@ class AdaptiveV2AdversarialGDTrainer(AdaptiveAdversarialGDTrainer):
 
         if iter is not None and iter % 100 == 0:
             LOGGER.info(f"[{epoch:04d}][{iter:05d}]: Adversarial attack weights: {self.adv_attacks_weights}")
-            self.logger[f"adv_test/{self.logging_prefix}__adversarial_attacks_weights"].log(self.adv_attacks_weights)
