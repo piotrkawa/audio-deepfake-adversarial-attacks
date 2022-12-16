@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from dfadetect.agnostic_datasets.base_dataset import SimpleAudioFakeDataset
+from src.datasets.base_dataset import SimpleAudioFakeDataset
 
 
 FAKEAVCELEB_KFOLD_SPLIT = {

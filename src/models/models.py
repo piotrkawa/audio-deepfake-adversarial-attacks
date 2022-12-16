@@ -1,6 +1,6 @@
 from typing import Dict
 
-from dfadetect.models import lcnn, rawnet3, specrnet
+from src.models import lcnn, rawnet3, specrnet
 
 
 def get_model(model_name: str, config: Dict, device: str):

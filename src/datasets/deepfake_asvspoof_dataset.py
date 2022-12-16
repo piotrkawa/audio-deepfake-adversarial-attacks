@@ -3,7 +3,7 @@ import logging
 
 import pandas as pd
 
-from dfadetect.agnostic_datasets.base_dataset import SimpleAudioFakeDataset
+from src.datasets.base_dataset import SimpleAudioFakeDataset
 
 
 DF_ASVSPOOF_KFOLD_SPLIT = {

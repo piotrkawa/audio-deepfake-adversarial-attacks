@@ -9,9 +9,9 @@ import yaml
 from sklearn.metrics import precision_recall_fscore_support, roc_auc_score
 from torch.utils.data import DataLoader
 
-from dfadetect import metrics, utils
-from dfadetect.agnostic_datasets.attack_agnostic_dataset import AttackAgnosticDataset, NoFoldDataset
-from dfadetect.models import models
+from src import metrics, utils
+from src.datasets.attack_agnostic_dataset import AttackAgnosticDataset, NoFoldDataset
+from src.models import models
 
 LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.INFO)

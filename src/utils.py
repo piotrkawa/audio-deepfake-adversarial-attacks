@@ -1,4 +1,4 @@
-"""Utility file for dfadetect toolkit."""
+"""Utility file for src toolkit."""
 import os
 import random
 from pathlib import Path

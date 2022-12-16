@@ -8,7 +8,7 @@ import torch
 import torch.nn as torch_nn
 
 try:
-    from dfadetect import frontends
+    from src import frontends
 except:
     import os
     import inspect

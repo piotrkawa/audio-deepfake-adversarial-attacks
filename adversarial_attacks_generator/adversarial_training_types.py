@@ -1,6 +1,6 @@
 from enum import Enum
 
-from dfadetect.trainer import AdaptiveV2AdversarialGDTrainer, AdversarialGDTrainer, AdaptiveAdversarialGDTrainer, OnlyOneAdversarialGDTrainer, EqualAdversarialGDTrainer
+from src.trainer import AdaptiveV2AdversarialGDTrainer, AdversarialGDTrainer, AdaptiveAdversarialGDTrainer, OnlyOneAdversarialGDTrainer, EqualAdversarialGDTrainer
 
 
 class AdversarialGDTrainerEnum(Enum):

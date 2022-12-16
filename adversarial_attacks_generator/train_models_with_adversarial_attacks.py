@@ -12,11 +12,11 @@ from torch import nn
 import tqdm
 import yaml
 
-from dfadetect.agnostic_datasets.attack_agnostic_dataset import AttackAgnosticDataset, NoFoldDataset
+from src.datasets.attack_agnostic_dataset import AttackAgnosticDataset, NoFoldDataset
 from adversarial_attacks_generator.adversarial_training_types import AdversarialGDTrainerEnum
-from dfadetect.models import models
-from dfadetect.trainer import save_model
-from dfadetect.utils import set_seed
+from src.models import models
+from src.trainer import save_model
+from src.utils import set_seed
 
 LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.INFO)

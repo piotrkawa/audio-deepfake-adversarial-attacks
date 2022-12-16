@@ -8,10 +8,10 @@ from typing import Dict, List, Optional, Tuple, Union
 import torch
 import yaml
 
-from dfadetect.agnostic_datasets.attack_agnostic_dataset import AttackAgnosticDataset, NoFoldDataset
-from dfadetect.models import models
-from dfadetect.trainer import GDTrainer
-from dfadetect.utils import set_seed
+from src.datasets.attack_agnostic_dataset import AttackAgnosticDataset, NoFoldDataset
+from src.models import models
+from src.trainer import GDTrainer
+from src.utils import set_seed
 
 LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.INFO)

@@ -15,11 +15,11 @@ from torch.utils.data import DataLoader
 
 from adversarial_attacks_generator import utils
 from adversarial_attacks_generator.attacks import AttackEnum
-from dfadetect.agnostic_datasets.attack_agnostic_dataset import AttackAgnosticDataset, NoFoldDataset
-from dfadetect.models import models
-from dfadetect.utils import set_seed
+from src.datasets.attack_agnostic_dataset import AttackAgnosticDataset, NoFoldDataset
+from src.models import models
+from src.utils import set_seed
 from sklearn.metrics import precision_recall_fscore_support, roc_auc_score
-from dfadetect.metrics import calculate_eer
+from src.metrics import calculate_eer
 from adversarial_attacks_generator.qualitative.attacks_analysis import AttackAnalyser
 
 
