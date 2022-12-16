@@ -45,7 +45,7 @@ def get_datasets(
             fakeavceleb_path=datasets_paths[2],
             fold_num=fold,
             fold_subset="train",
-            reduced_number=100_000,
+            reduced_number=512,
             oversample=True,
         )
         data_test = NoFoldDataset(
@@ -54,7 +54,7 @@ def get_datasets(
             fakeavceleb_path=datasets_paths[2],
             fold_num=fold,
             fold_subset="test",
-            reduced_number=10_000,
+            reduced_number=128,
             oversample=True,
         )
     else:
@@ -151,7 +151,7 @@ def train_nn(
         config_save_path = str(Path(config_save_path) / config_name)
         with open(config_save_path, "w") as f:
             yaml.dump(config, f)
-        LOGGER.info(f"Test config saved at location '{config_save_path}'!")
+        LOGGER.info("Test config saved at location '{}'!".format(config_save_path))
 
 
 def main(args):

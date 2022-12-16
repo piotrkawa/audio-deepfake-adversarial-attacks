@@ -1,5 +1,5 @@
 paths: [
-  "configs/training/frontend_lcnn.yaml",
-  "configs/training/frontend_specrnet.yaml",
-  "configs/training/rawnet3.yaml",
+  "configs/training/lcnn.yaml",
+  # "configs/training/specrnet.yaml",
+  # "configs/training/rawnet3.yaml",
 ]

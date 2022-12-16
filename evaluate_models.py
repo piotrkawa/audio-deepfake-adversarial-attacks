@@ -52,7 +52,6 @@ def get_dataset(
 def evaluate_nn(
     model_paths: List[Path],
     datasets_paths: List[Union[Path, str]],
-    data_config: Dict,
     model_config: Dict,
     device: str,
     amount_to_use: Optional[int] = None,
@@ -63,6 +62,8 @@ def evaluate_nn(
     model_name, model_parameters = model_config["name"], model_config["parameters"]
 
     weights_path = ""
+    # TODO(MP): once you get rid of folds, change checkpoint/paths (List(str))
+    # in configs to checkpoint/path (str)
     folds = [0, 1, 2] if not no_fold else [-1]
 
     for fold_no, fold in enumerate(tqdm.tqdm(folds)):
@@ -149,7 +150,6 @@ def evaluate_nn(
         auc_label = f"eval/{logging_prefix}__auc"
 
         # Log metrics ...
-
         LOGGER.info(
             f"{eer_label}: {eer:.4f}, {accuracy_label}: {eval_accuracy:.4f}, {precision_label}: {precision:.4f}, {recall_label}: {recall:.4f}, {f1_label}: {f1_score:.4f}, {auc_label}: {auc_score:.4f}"
         )
@@ -170,10 +170,9 @@ def main(args):
     utils.set_seed(seed)
 
     evaluate_nn(
-        model_paths=config["checkpoint"].get("paths", []),
+        model_paths=config["checkpoint"].get("path", ""),
         datasets_paths=[args.asv_path, args.wavefake_path, args.celeb_path],
         model_config=config["model"],
-        data_config=config["data"],
         amount_to_use=args.amount,
         device=device,
         no_fold=args.no_fold,
