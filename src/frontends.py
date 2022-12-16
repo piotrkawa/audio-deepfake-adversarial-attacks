@@ -1,4 +1,4 @@
-from typing import List, Union, Callable, Tuple
+from typing import Callable, List, Tuple, Union
 
 import torch
 import torchaudio

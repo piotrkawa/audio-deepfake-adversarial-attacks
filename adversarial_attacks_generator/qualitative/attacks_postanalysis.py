@@ -1,12 +1,11 @@
 import logging
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from scipy.io import wavfile
 from mel_cepstral_distance import get_metrics_wavs
-
+from scipy.io import wavfile
 
 print(plt.style.available)
 plt.style.use('ggplot')

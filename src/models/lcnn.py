@@ -10,12 +10,13 @@ import torch.nn as torch_nn
 try:
     from src import frontends
 except:
-    import os
     import inspect
+    import os
     currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     parentdir = os.path.dirname(currentdir)
     sys.path.insert(0, parentdir)
     import frontends
+
     # TODO(PK): current implementation works only on CUDA
 
 

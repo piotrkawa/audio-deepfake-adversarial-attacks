@@ -1,10 +1,9 @@
-from pathlib import Path
 import logging
+from pathlib import Path
 
 import pandas as pd
 
 from src.datasets.base_dataset import SimpleAudioFakeDataset
-
 
 DF_ASVSPOOF_KFOLD_SPLIT = {
     -1: {

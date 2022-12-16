@@ -2,18 +2,19 @@ import argparse
 import logging
 import sys
 import time
-from pathlib import Path
 from enum import Enum
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
-
 import torch
-from torch import nn
 import tqdm
 import yaml
+from torch import nn
 
-from src.datasets.attack_agnostic_dataset import AttackAgnosticDataset, NoFoldDataset
-from adversarial_attacks_generator.adversarial_training_types import AdversarialGDTrainerEnum
+from adversarial_attacks_generator.adversarial_training_types import \
+    AdversarialGDTrainerEnum
+from src.datasets.attack_agnostic_dataset import (AttackAgnosticDataset,
+                                                  NoFoldDataset)
 from src.models import models
 from src.trainer import save_model
 from src.utils import set_seed

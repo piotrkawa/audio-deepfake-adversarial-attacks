@@ -1,9 +1,9 @@
 import logging
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.io import wavfile
-
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.io import wavfile
 
 LOGGER = logging.getLogger()
 

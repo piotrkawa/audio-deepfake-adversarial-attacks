@@ -4,7 +4,6 @@ import pandas as pd
 
 from src.datasets.base_dataset import SimpleAudioFakeDataset
 
-
 FAKEAVCELEB_KFOLD_SPLIT = {
     0: {
         "train": ['rtvc', 'faceswap-wav2lip'],

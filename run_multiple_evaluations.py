@@ -3,6 +3,7 @@ import subprocess
 
 import yaml
 
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(

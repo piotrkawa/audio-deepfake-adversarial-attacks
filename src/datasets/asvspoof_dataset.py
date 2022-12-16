@@ -4,7 +4,6 @@ import pandas as pd
 
 from src.datasets.base_dataset import SimpleAudioFakeDataset
 
-
 ASVSPOOF_KFOLD_SPLIT = {
     0: {
         "train": ['A01', 'A02', 'A03', 'A04', 'A07', 'A08', 'A09', 'A10', 'A11', 'A12', 'A13', 'A14', 'A19'],

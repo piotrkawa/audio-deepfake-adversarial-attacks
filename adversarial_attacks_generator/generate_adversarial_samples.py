@@ -1,27 +1,26 @@
 import argparse
-from datetime import datetime
-from typing import List, Union, Dict, Optional, Any, Callable
-from pathlib import Path
 import logging
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import numpy as np
-import yaml
-
 import torch
 import tqdm
-
+import yaml
+from sklearn.metrics import precision_recall_fscore_support, roc_auc_score
 from torch import nn
 from torch.utils.data import DataLoader
 
 from adversarial_attacks_generator import utils
 from adversarial_attacks_generator.attacks import AttackEnum
-from src.datasets.attack_agnostic_dataset import AttackAgnosticDataset, NoFoldDataset
+from adversarial_attacks_generator.qualitative.attacks_analysis import \
+    AttackAnalyser
+from src.datasets.attack_agnostic_dataset import (AttackAgnosticDataset,
+                                                  NoFoldDataset)
+from src.metrics import calculate_eer
 from src.models import models
 from src.utils import set_seed
-from sklearn.metrics import precision_recall_fscore_support, roc_auc_score
-from src.metrics import calculate_eer
-from adversarial_attacks_generator.qualitative.attacks_analysis import AttackAnalyser
-
 
 LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.INFO)

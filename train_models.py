@@ -8,7 +8,8 @@ from typing import Dict, List, Optional, Tuple, Union
 import torch
 import yaml
 
-from src.datasets.attack_agnostic_dataset import AttackAgnosticDataset, NoFoldDataset
+from src.datasets.attack_agnostic_dataset import (AttackAgnosticDataset,
+                                                  NoFoldDataset)
 from src.models import models
 from src.trainer import GDTrainer
 from src.utils import set_seed

@@ -1,12 +1,16 @@
 import logging
-import pandas as pd
 from typing import List, Optional
 
+import pandas as pd
+
 from src.datasets.asvspoof_dataset import ASVSpoofDataset
-from src.datasets.deepfake_asvspoof_dataset import DeepFakeASVSpoofDatasetNoFold
 from src.datasets.base_dataset import SimpleAudioFakeDataset
-from src.datasets.fakeavceleb_dataset import FakeAVCelebDataset, FakeAVCelebDatasetNoFold
-from src.datasets.wavefake_dataset import WaveFakeDataset, WaveFakeDatasetNoFold
+from src.datasets.deepfake_asvspoof_dataset import \
+    DeepFakeASVSpoofDatasetNoFold
+from src.datasets.fakeavceleb_dataset import (FakeAVCelebDataset,
+                                              FakeAVCelebDatasetNoFold)
+from src.datasets.wavefake_dataset import (WaveFakeDataset,
+                                           WaveFakeDatasetNoFold)
 
 LOGGER = logging.getLogger()
 

@@ -1,12 +1,12 @@
 """A generic training wrapper."""
-from copy import deepcopy
-import random
-import logging
-import numpy as np
-from typing import Callable, List, Optional, Union
-from pathlib import Path
 import functools
+import logging
+import random
+from copy import deepcopy
+from pathlib import Path
+from typing import Callable, List, Optional, Union
 
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
 

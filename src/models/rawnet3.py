@@ -4,7 +4,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from asteroid_filterbanks import Encoder, ParamSincFB  # pip install asteroid_filterbanks
+from asteroid_filterbanks import (Encoder,  # pip install asteroid_filterbanks
+                                  ParamSincFB)
 
 
 class RawNet3(nn.Module):

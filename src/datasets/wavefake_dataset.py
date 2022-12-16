@@ -4,7 +4,6 @@ import pandas as pd
 
 from src.datasets.base_dataset import SimpleAudioFakeDataset
 
-
 WAVEFAKE_KFOLD_SPLIT = {
     0: {
         "train": ['melgan_large', 'waveglow', 'full_band_melgan', 'melgan', 'hifiGAN'],

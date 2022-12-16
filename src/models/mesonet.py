@@ -5,6 +5,7 @@ from FakeAVCeleb repository - https://github.com/DASH-Lab/FakeAVCeleb/blob/main/
 import torch
 import torch.nn as nn
 
+
 class Meso4(nn.Module):
 
     def __init__(self, num_classes=1, **kwargs):

@@ -10,7 +10,8 @@ from sklearn.metrics import precision_recall_fscore_support, roc_auc_score
 from torch.utils.data import DataLoader
 
 from src import metrics, utils
-from src.datasets.attack_agnostic_dataset import AttackAgnosticDataset, NoFoldDataset
+from src.datasets.attack_agnostic_dataset import (AttackAgnosticDataset,
+                                                  NoFoldDataset)
 from src.models import models
 
 LOGGER = logging.getLogger()
