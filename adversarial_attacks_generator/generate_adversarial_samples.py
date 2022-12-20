@@ -16,8 +16,7 @@ from adversarial_attacks_generator import utils
 from adversarial_attacks_generator.attacks import AttackEnum
 from adversarial_attacks_generator.qualitative.attacks_analysis import \
     AttackAnalyser
-from src.datasets.attack_agnostic_dataset import (AttackAgnosticDataset,
-                                                  NoFoldDataset)
+from src.datasets.attack_agnostic_dataset import NoFoldDataset
 from src.metrics import calculate_eer
 from src.models import models
 from src.utils import set_seed
@@ -95,13 +94,6 @@ def parse_arguments():
     )
 
     parser.add_argument(
-        "--no_fold", 
-        help="Use no fold version of the dataset",
-        default=False,
-        action="store_true"
-    )
-
-    parser.add_argument(
         "--raw_from_dataset",
         help="Return raw sample from the dataset",
         default=False,
@@ -149,37 +141,32 @@ def main(args):
         amount_to_use=args.amount,
         device=device,
         on_attack_end_callback=on_attack_end_callback,
-        no_fold=args.no_fold,
         raw_sample_from_dataset=args.raw_from_dataset
     )
 
-def load_model(model_config, fold: int = 0, device: str = "cuda"):
+def load_model(model_config, device: str = "cuda"):
     model_name, model_parameters = model_config["model"]["name"], model_config["model"]["parameters"]
-    model_paths = model_config["checkpoint"].get("paths", [])
+    model_path = model_config["checkpoint"].get("paths")
 
     model = models.get_model(
         model_name=model_name, config=model_parameters, device=device,
     )
     # If provided weights, apply corresponding ones (from an appropriate fold)
-    weights_path = ""
-    if len(model_paths) >= 1:
-        assert len(model_paths) == 3 or len(model_paths) == 1, "Pass either 0, 1 or 3 weights path"
-        weights_path = model_paths[fold]
-
+    if model_path:
         try:
             model.load_state_dict(
-                torch.load(weights_path)
+                torch.load(model_path)
             )
         except RuntimeError:
             model = nn.DataParallel(model)
             model.load_state_dict(
-                torch.load(weights_path)
+                torch.load(model_path)
             )
             model = model.module
 
-        LOGGER.info("Loaded weigths on '%s' model, path: %s", model_name, weights_path)
+        LOGGER.info("Loaded weigths on '%s' model, path: %s", model_name, model_path)
     model = model.to(device)
-    model.weights_path = weights_path
+    model.weights_path = model_path
 
     return model
 
@@ -195,194 +182,165 @@ def generate_attacks(
     batch_size: int = 64,
     on_attack_end_callback: Optional[Callable] = None,
     raw_sample_from_dataset: bool = False,
-    no_fold: bool = False,
 ):
     LOGGER.info("Loading data...")
 
-    folds = [0, 1, 2] if not no_fold else [-1]
+    LOGGER.info(f"Test!")
+    # Load model architecture
+    model = load_model(model_config, device)
+    model = nn.DataParallel(model)
 
-    for fold_no, fold in enumerate(tqdm.tqdm(folds)):
-        LOGGER.info(f"Test Fold [{fold_no + 1}/{len(folds)}]")
-        # Load model architecture
-        model = load_model(model_config, fold, device)
-        model = nn.DataParallel(model)
+    if attack_model_config is not None and attack_method is not None:
+        attack_model = load_model(attack_model_config, device)
+        attack_model = nn.DataParallel(attack_model)
 
-        if attack_model_config is not None and attack_method is not None:
-            attack_model = load_model(attack_model_config, fold, device)
-            attack_model = nn.DataParallel(attack_model)
+        atk = attack_method(attack_model, **attack_params)
+        atk.set_training_mode(model_training=True, batchnorm_training=False)
 
-            atk = attack_method(attack_model, **attack_params)
-            atk.set_training_mode(model_training=True, batchnorm_training=False)
+    else:
+        attack_model = None
+        atk = None
 
-        else:
-            attack_model = None
-            atk = None
+    data_val = get_dataset(
+        datasets_paths=datasets_paths,
+        amount_to_use=amount_to_use,
+        raw_sample_from_dataset=raw_sample_from_dataset
+    )
 
-        logging_prefix = f"fold_{fold}"
+    LOGGER.info(
+        f"Testing '{model.module.__class__.__name__}' model, "
+        f"weights path: '{model.module.weights_path}', "
+        f"on {len(data_val)} audio files."
+    )
 
-        data_val = get_dataset(
-            datasets_paths=datasets_paths,
-            fold=fold,
-            amount_to_use=amount_to_use,
-            raw_sample_from_dataset=raw_sample_from_dataset
-        )
-
+    if attack_model is not None:
         LOGGER.info(
-            f"Testing '{model.module.__class__.__name__}' model, "
-            f"weights path: '{model.module.weights_path}', "
-            f"on {len(data_val)} audio files."
+            f"Attack using '{attack_model.module.__class__.__name__}' model "
+            f"and '{atk.__class__.__name__}' method ({attack_params}), "
+            f"weights path: '{attack_model.module.weights_path}'"
         )
+    else:
+        LOGGER.info("No attack applied")
+
+    test_loader = DataLoader(
+        data_val,
+        batch_size=batch_size,
+        shuffle=True,
+        drop_last=True,
+        num_workers=3,
+    )
+
+    num_correct = 0.0
+    num_total = 0.0
+    y_pred = []
+    y = []
+    y_pred_label = []
+
+    for i, (batch_x, batch_sr, batch_y, batch_metadata) in tqdm.tqdm(enumerate(test_loader), desc="Batches"):
+        model.eval()
+
+        batch_x = batch_x.to(device)
+        batch_y = batch_y.to(device)
+        num_total += batch_x.size(0)
 
         if attack_model is not None:
-            LOGGER.info(
-                f"Attack using '{attack_model.module.__class__.__name__}' model "
-                f"and '{atk.__class__.__name__}' method ({attack_params}), "
-                f"weights path: '{attack_model.module.weights_path}'"
-            )
+            batch_x_attacked, mn, mx = utils.to_minmax(batch_x)
+            batch_x_attacked = atk(batch_x_attacked, batch_y)
+            batch_x_attacked = utils.revert_minmax(batch_x_attacked, mn, mx)
         else:
-            LOGGER.info("No attack applied")
+            batch_x_attacked = torch.clone(batch_x)
 
-        test_loader = DataLoader(
-            data_val,
-            batch_size=batch_size,
-            shuffle=True,
-            drop_last=True,
-            num_workers=3,
-        )
+        batch_x_noproc = torch.clone(batch_x)
+        batch_x_attacked_noproc = torch.clone(batch_x_attacked)
 
-        num_correct = 0.0
-        num_total = 0.0
-        y_pred = []
-        y = []
-        y_pred_label = []
+        with torch.no_grad():
+            # here we run preprocessing with defaults parameters WAVE_FAKE_CUT, WAVE_FAKE_TRIM, WAVE_FAKE_SR, etc.
+            if raw_sample_from_dataset:
+                batch_x_attacked, _ = NoFoldDataset.wavefake_preprocessing_on_batch(
+                    batch_x_attacked,
+                    batch_sr,
+                )
 
-        for i, (batch_x, batch_sr, batch_y, batch_metadata) in tqdm.tqdm(enumerate(test_loader), desc="Batches"):
-            model.eval()
+            batch_preds = model(batch_x_attacked).squeeze(1).detach()
+            batch_preds = torch.sigmoid(batch_preds)
+            batch_preds_label = (batch_preds + .5).int()
 
-            batch_x = batch_x.to(device)
-            batch_y = batch_y.to(device)
-            num_total += batch_x.size(0)
-
-            if attack_model is not None:
-                batch_x_attacked, mn, mx = utils.to_minmax(batch_x)
-                batch_x_attacked = atk(batch_x_attacked, batch_y)
-                batch_x_attacked = utils.revert_minmax(batch_x_attacked, mn, mx)
-            else:
-                batch_x_attacked = torch.clone(batch_x)
-
-            batch_x_noproc = torch.clone(batch_x)
-            batch_x_attacked_noproc = torch.clone(batch_x_attacked)
-
-            with torch.no_grad():
-                # here we run preprocessing with defaults parameters WAVE_FAKE_CUT, WAVE_FAKE_TRIM, WAVE_FAKE_SR, etc.
+            if on_attack_end_callback is not None:
                 if raw_sample_from_dataset:
-                    batch_x_attacked, _ = AttackAgnosticDataset.wavefake_preprocessing_on_batch(
-                        batch_x_attacked,
+                    batch_x, _ = NoFoldDataset.wavefake_preprocessing_on_batch(
+                        batch_x,
                         batch_sr,
                     )
+                batch_preds_noattack = model(batch_x).squeeze(1).detach()
+                batch_preds_noattack = torch.sigmoid(batch_preds_noattack)
+                batch_preds_noattack_label = (batch_preds_noattack + .5).int()
 
-                batch_preds = model(batch_x_attacked).squeeze(1).detach()
-                batch_preds = torch.sigmoid(batch_preds)
-                batch_preds_label = (batch_preds + .5).int()
+                on_attack_end_callback(
+                    batch_x=batch_x_noproc,
+                    batch_x_attacked=batch_x_attacked_noproc,
+                    batch_y=batch_y,
+                    batch_preds_label=batch_preds_label,
+                    batch_preds=batch_preds,
+                    batch_preds_noattack_label=batch_preds_noattack_label,
+                    batch_preds_noattack=batch_preds_noattack,
+                    batch_metadata=batch_metadata,
+                )
 
-                if on_attack_end_callback is not None:
-                    if raw_sample_from_dataset:
-                        batch_x, _ = AttackAgnosticDataset.wavefake_preprocessing_on_batch(
-                            batch_x,
-                            batch_sr,
-                        )
-                    batch_preds_noattack = model(batch_x).squeeze(1).detach()
-                    batch_preds_noattack = torch.sigmoid(batch_preds_noattack)
-                    batch_preds_noattack_label = (batch_preds_noattack + .5).int()
+        num_correct += (batch_preds_label == batch_y.int()).sum(dim=0).item()
 
-                    on_attack_end_callback(
-                        batch_x=batch_x_noproc,
-                        batch_x_attacked=batch_x_attacked_noproc,
-                        batch_y=batch_y,
-                        batch_preds_label=batch_preds_label,
-                        batch_preds=batch_preds,
-                        batch_preds_noattack_label=batch_preds_noattack_label,
-                        batch_preds_noattack=batch_preds_noattack,
-                        batch_metadata=batch_metadata,
-                    )
+        y_pred.append(batch_preds.cpu().numpy()) # torch.concat([y_pred, batch_pred], dim=0)
+        y_pred_label.append(batch_preds_label.cpu().numpy()) # torch.concat([y_pred_label, batch_pred_label], dim=0)
+        y.append(batch_y.cpu().numpy()) # torch.concat([y, batch_y], dim=0)
 
-            num_correct += (batch_preds_label == batch_y.int()).sum(dim=0).item()
+    eval_accuracy = (num_correct / num_total) * 100
 
-            y_pred.append(batch_preds.cpu().numpy()) # torch.concat([y_pred, batch_pred], dim=0)
-            y_pred_label.append(batch_preds_label.cpu().numpy()) # torch.concat([y_pred_label, batch_pred_label], dim=0)
-            y.append(batch_y.cpu().numpy()) # torch.concat([y, batch_y], dim=0)
+    y_pred = np.concatenate(y_pred, axis=0)
+    y_pred_label = np.concatenate(y_pred_label, axis=0)
+    y = np.concatenate(y, axis=0)
+    precision, recall, f1_score, support = precision_recall_fscore_support(
+        y,
+        y_pred_label,
+        average="binary",
+        beta=1.0
+    )
+    auc_score = roc_auc_score(y_true=y, y_score=y_pred)
 
-        eval_accuracy = (num_correct / num_total) * 100
+    # For EER flip values, following original evaluation implementation
+    y_for_eer = 1 - y
 
-        y_pred = np.concatenate(y_pred, axis=0)
-        y_pred_label = np.concatenate(y_pred_label, axis=0)
-        y = np.concatenate(y, axis=0)
-        precision, recall, f1_score, support = precision_recall_fscore_support(
-            y,
-            y_pred_label,
-            average="binary",
-            beta=1.0
-        )
-        auc_score = roc_auc_score(y_true=y, y_score=y_pred)
+    thresh, eer, fpr, tpr = calculate_eer(
+        y=y_for_eer,
+        y_score=y_pred,
+    )
 
-        # For EER flip values, following original evaluation implementation
-        y_for_eer = 1 - y
+    eer_label = f"adv_eval/eer"
+    accuracy_label = f"adv_eval/accuracy"
+    precision_label = f"adv_eval/precision"
+    recall_label = f"adv_eval/recall"
+    f1_label = f"adv_eval/f1_score"
+    auc_label = f"adv_eval/auc"
 
-        thresh, eer, fpr, tpr = calculate_eer(
-            y=y_for_eer,
-            y_score=y_pred,
-        )
-
-        eer_label = f"adv_eval/{logging_prefix}__eer"
-        accuracy_label = f"adv_eval/{logging_prefix}__accuracy"
-        precision_label = f"adv_eval/{logging_prefix}__precision"
-        recall_label = f"adv_eval/{logging_prefix}__recall"
-        f1_label = f"adv_eval/{logging_prefix}__f1_score"
-        auc_label = f"adv_eval/{logging_prefix}__auc"
-
-        logger[eer_label].log(eer)
-        logger[accuracy_label].log(eval_accuracy)
-        logger[precision_label].log(precision)
-        logger[recall_label].log(recall)
-        logger[f1_label].log(f1_score)
-        logger[auc_label].log(auc_score)
-
-        LOGGER.info(
-            f"{eer_label}: {eer:.4f}, {accuracy_label}: {eval_accuracy:.4f}, {precision_label}: {precision:.4f}, "
-            f"{recall_label}: {recall:.4f}, {f1_label}: {f1_score:.4f}, {auc_label}: {auc_score:.4f}"
-        )
+    LOGGER.info(
+        f"{eer_label}: {eer:.4f}, {accuracy_label}: {eval_accuracy:.4f}, {precision_label}: {precision:.4f}, "
+        f"{recall_label}: {recall:.4f}, {f1_label}: {f1_score:.4f}, {auc_label}: {auc_score:.4f}"
+    )
 
 
 def get_dataset(
     datasets_paths: List[Union[Path, str]],
-    fold: int,
     amount_to_use: Optional[int],
     raw_sample_from_dataset: bool = False
-) -> Union[AttackAgnosticDataset, NoFoldDataset]:
-    if fold == -1: # no_fold setting
-        data_val = NoFoldDataset(
-            asvspoof_path=datasets_paths[0],
-            wavefake_path=datasets_paths[1],
-            fakeavceleb_path=datasets_paths[2],
-            fold_num=fold,
-            fold_subset="val",
-            reduced_number=10_000,
-            return_label=True,
-            return_meta=True,
-            return_raw=raw_sample_from_dataset
-        )
-    else:
-        data_val = AttackAgnosticDataset(
-            asvspoof_path=datasets_paths[0],
-            wavefake_path=datasets_paths[1],
-            fakeavceleb_path=datasets_paths[2],
-            fold_num=fold,
-            fold_subset="val",
-            reduced_number=amount_to_use,
-            return_label=True,
-            return_meta=True,
-            return_raw=raw_sample_from_dataset
-        )
+) -> NoFoldDataset:
+    data_val = NoFoldDataset(
+        asvspoof_path=datasets_paths[0],
+        wavefake_path=datasets_paths[1],
+        fakeavceleb_path=datasets_paths[2],
+        subset="val",
+        reduced_number=amount_to_use,
+        return_label=True,
+        return_meta=True,
+        return_raw=raw_sample_from_dataset,
+    )
     return data_val
 
 

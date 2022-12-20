@@ -36,17 +36,16 @@ SOX_SILENCE = [
 class SimpleAudioFakeDataset(Dataset):
     def __init__(
         self,
-        fold_num,
-        fold_subset,
+        subset,
         transform=None,
-        return_label=True,
-        return_meta=False,
-        return_raw=False,
+        return_label: bool = True,
+        return_meta: bool = False,
+        return_raw: bool = False,
     ):
         self.transform = transform
         self.samples = pd.DataFrame()
 
-        self.fold_num, self.fold_subset = fold_num, fold_subset
+        self.subset = subset
         self.allowed_attacks = None
         self.partition_ratio = None
         self.seed = None
@@ -67,7 +66,7 @@ class SimpleAudioFakeDataset(Dataset):
         subsets = np.split(
             samples_list, [int(p * len(samples_list)), int((p + s) * len(samples_list))]
         )
-        return dict(zip(["train", "test", "val"], subsets))[self.fold_subset]
+        return dict(zip(["train", "test", "val"], subsets))[self.subset]
 
     def df2tuples(self):
         tuple_samples = []
@@ -188,8 +187,7 @@ class SimpleAudioFakeDataset(Dataset):
                     (
                         attack_type,
                         path,
-                        self.fold_num,
-                        self.fold_subset,
+                        self.subset,
                         real_sec_length,
                     )
                 )

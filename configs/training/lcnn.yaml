@@ -2,7 +2,7 @@ data:
   seed: 42
 
 checkpoint:
-  paths: []
+  path: ""
 
 model:
   name: "lcnn"

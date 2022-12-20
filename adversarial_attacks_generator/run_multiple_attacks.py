@@ -37,7 +37,6 @@ if __name__ == "__main__":
             f"--attack {attack}",
             f"--config {config}",
             f"--attack_model_config {attack_model_config}",
-            "--no_fold",
             "--qual",
             "--raw_from_dataset"
             f"--asv_path {args.data_path}/ASVspoof2021/DF",

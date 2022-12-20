@@ -78,7 +78,6 @@ class GDTrainer(Trainer):
         model: torch.nn.Module,
         test_len: Optional[float] = None,
         test_dataset: Optional[torch.utils.data.Dataset] = None,
-        logging_prefix: str = "",
     ):
         if test_dataset is not None:
             train = dataset
@@ -162,7 +161,7 @@ class GDTrainer(Trainer):
             running_loss /= num_total
             train_accuracy = (num_correct / num_total) * 100
 
-            LOGGER.info(f"Epoch [{epoch+1}/{self.epochs}]: train/{logging_prefix}__loss: {running_loss}, train/{logging_prefix}__accuracy: {train_accuracy}")
+            LOGGER.info(f"Epoch [{epoch+1}/{self.epochs}]: train/loss: {running_loss}, train/accuracy: {train_accuracy}")
 
             test_running_loss = 0.0
             num_correct = 0.0
@@ -192,7 +191,7 @@ class GDTrainer(Trainer):
 
             test_running_loss /= num_total
             test_acc = 100 * (num_correct / num_total)
-            LOGGER.info(f"Epoch [{epoch+1}/{self.epochs}]: test/{logging_prefix}__loss: {test_running_loss}, test/{logging_prefix}__accuracy: {test_acc}, test/{logging_prefix}__eer: {eer_val}")
+            LOGGER.info(f"Epoch [{epoch+1}/{self.epochs}]: test/loss: {test_running_loss}, test/accuracy: {test_acc}, test/eer: {eer_val}")
 
             if best_model is None or test_acc > best_acc:
                 best_acc = test_acc
@@ -211,7 +210,6 @@ class AdversarialGDTrainer(Trainer):
         super(AdversarialGDTrainer, self).__init__(*args, **kwargs)
 
         self.attacks = None
-        self.logging_prefix = None
 
     @staticmethod
     def multi_f1_score(results):
@@ -227,11 +225,9 @@ class AdversarialGDTrainer(Trainer):
         adversarial_attacks: List[str],
         test_len: Optional[float] = None,
         test_dataset: Optional[torch.utils.data.Dataset] = None,
-        logging_prefix: str = "",
         model_dir: Optional[str] = None,
         save_model_name: Optional[str] = None
     ):
-        self.logging_prefix = logging_prefix
 
         if test_dataset is not None:
             train = dataset
@@ -336,8 +332,8 @@ class AdversarialGDTrainer(Trainer):
             running_loss /= num_total
             train_accuracy = (num_correct/num_total) * 100
 
-            LOGGER.info(f"Epoch [{epoch+1}/{self.epochs}]: train/{logging_prefix}__loss: {running_loss}, "
-                        f"train/{logging_prefix}__accuracy: {train_accuracy}")
+            LOGGER.info(f"Epoch [{epoch+1}/{self.epochs}]: train/loss: {running_loss}, "
+                        f"train/accuracy: {train_accuracy}")
 
             # Validation
             test_running_loss, test_acc, eer_val = self.validation_epoch(
@@ -349,8 +345,8 @@ class AdversarialGDTrainer(Trainer):
             test_acc_results = [test_acc / 100]
 
             LOGGER.info(
-                f"Epoch [{epoch+1}/{self.epochs}]: test/{logging_prefix}__loss: {test_running_loss}, "
-                f"test/{logging_prefix}__accuracy: {test_acc}, test/{logging_prefix}__eer: {eer_val}"
+                f"Epoch [{epoch+1}/{self.epochs}]: test/loss: {test_running_loss}, "
+                f"test/accuracy: {test_acc}, test/eer: {eer_val}"
             )
 
             # Adversary validation
@@ -374,9 +370,9 @@ class AdversarialGDTrainer(Trainer):
                 test_acc_results.append(adv_test_acc / 100)
 
                 LOGGER.info(
-                    f"Epoch [{epoch+1}/{self.epochs}]: adv_test/{logging_prefix}__{attack_name}__loss: {adv_test_running_loss},"
-                    f" adv_test/{logging_prefix}__{attack_name}__accuracy: {adv_test_acc},"
-                    f" adv_test/{logging_prefix}__{attack_name}__eer: {adv_eer_val}."
+                    f"Epoch [{epoch+1}/{self.epochs}]: adv_test/{attack_name}__loss: {adv_test_running_loss},"
+                    f" adv_test/{attack_name}__accuracy: {adv_test_acc},"
+                    f" adv_test/{attack_name}__eer: {adv_eer_val}."
                 )
 
             LOGGER.info(

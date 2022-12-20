@@ -5,30 +5,25 @@ import pandas as pd
 
 from src.datasets.base_dataset import SimpleAudioFakeDataset
 
-DF_ASVSPOOF_KFOLD_SPLIT = {
-    -1: {
-        "partition_ratio": [0.7, 0.15],
-        "seed": 45
-    }
+DF_ASVSPOOF_SPLIT = {
+    "partition_ratio": [0.7, 0.15],
+    "seed": 45
 }
 
 LOGGER = logging.getLogger()
 
-class DeepFakeASVSpoofDatasetNoFold(SimpleAudioFakeDataset):
+class DeepFakeASVSpoofDataset(SimpleAudioFakeDataset):
 
     protocol_file_name = "keys/CM/trial_metadata.txt"
     subset_dir_prefix = "ASVspoof2021_DF_eval"
     subset_parts = ("part00", "part01", "part02", "part03")
 
-    def __init__(self, path, fold_num=-1, fold_subset="train", transform=None):
-        super().__init__(fold_num, fold_subset, transform)
+    def __init__(self, path, subset="train", transform=None):
+        super().__init__(subset, transform)
         self.path = path
 
-        if fold_num != -1:
-            raise NotImplementedError
-
-        self.partition_ratio = DF_ASVSPOOF_KFOLD_SPLIT[fold_num]["partition_ratio"]
-        self.seed = DF_ASVSPOOF_KFOLD_SPLIT[fold_num]["seed"]
+        self.partition_ratio = DF_ASVSPOOF_SPLIT["partition_ratio"]
+        self.seed = DF_ASVSPOOF_SPLIT["seed"]
 
         self.flac_paths = self.get_file_references()
         self.samples = self.read_protocol()
@@ -96,7 +91,7 @@ if __name__ == "__main__":
     datasets = []
 
     for subset in ['train', 'test', 'val']:
-        dataset = DeepFakeASVSpoofDatasetNoFold(ASVSPOOF_DATASET_PATH, fold_num=-1, fold_subset=subset)
+        dataset = DeepFakeASVSpoofDataset(ASVSPOOF_DATASET_PATH, subset=subset)
 
         real_samples = dataset.samples[dataset.samples['label'] == 'bonafide']
         real += len(real_samples)

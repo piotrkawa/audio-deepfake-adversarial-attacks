@@ -24,7 +24,6 @@ if __name__ == "__main__":
         command = [
             "python evaluate_models.py",
             f"--config {current_config}",
-            "--no_fold",
         ]
 
         command = " ".join(command)

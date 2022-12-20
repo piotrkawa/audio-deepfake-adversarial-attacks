@@ -4,35 +4,12 @@ import pandas as pd
 
 from src.datasets.base_dataset import SimpleAudioFakeDataset
 
-FAKEAVCELEB_KFOLD_SPLIT = {
-    0: {
-        "train": ['rtvc', 'faceswap-wav2lip'],
-        "test": ['fsgan-wav2lip'],
-        "val": ['wav2lip'],
-        "partition_ratio": [0.7, 0.15],
-        "seed": 42
-    },
-    1: {
-        "train": ['fsgan-wav2lip', 'wav2lip'],
-        "test": ['rtvc'],
-        "val": ['faceswap-wav2lip'],
-        "partition_ratio": [0.7, 0.15],
-        "seed": 43
-    },
-    2: {
-        "train": ['faceswap-wav2lip', 'fsgan-wav2lip'],
-        "test": ['wav2lip'],
-        "val": ['rtvc'],
-        "partition_ratio": [0.7, 0.15],
-        "seed": 44
-    },
-    -1: {
-        "train": ['faceswap-wav2lip', 'fsgan-wav2lip', 'wav2lip', 'rtvc'],
-        "test":  ['faceswap-wav2lip', 'fsgan-wav2lip', 'wav2lip', 'rtvc'],
-        "val":   ['faceswap-wav2lip', 'fsgan-wav2lip', 'wav2lip', 'rtvc'],
-        "partition_ratio": [0.7, 0.15],
-        "seed": 45
-    },
+FAKEAVCELEB_SPLIT = {
+    "train": ['faceswap-wav2lip', 'fsgan-wav2lip', 'wav2lip', 'rtvc'],
+    "test":  ['faceswap-wav2lip', 'fsgan-wav2lip', 'wav2lip', 'rtvc'],
+    "val":   ['faceswap-wav2lip', 'fsgan-wav2lip', 'wav2lip', 'rtvc'],
+    "partition_ratio": [0.7, 0.15],
+    "seed": 45
 }
 
 
@@ -43,14 +20,14 @@ class FakeAVCelebDataset(SimpleAudioFakeDataset):
     metadata_file = Path(audio_folder) / "meta_data.csv"
     subsets = ("train", "dev", "eval")
 
-    def __init__(self, path, fold_num=0, fold_subset="train", transform=None):
-        super().__init__(fold_num, fold_subset, transform)
+    def __init__(self, path, subset="train", transform=None):
+        super().__init__(subset, transform)
         self.path = path
 
-        self.fold_num, self.fold_subset = fold_num, fold_subset
-        self.allowed_attacks = FAKEAVCELEB_KFOLD_SPLIT[fold_num][fold_subset]
-        self.partition_ratio = FAKEAVCELEB_KFOLD_SPLIT[fold_num]["partition_ratio"]
-        self.seed = FAKEAVCELEB_KFOLD_SPLIT[fold_num]["seed"]
+        self.subset = subset
+        self.allowed_attacks = FAKEAVCELEB_SPLIT[subset]
+        self.partition_ratio = FAKEAVCELEB_SPLIT["partition_ratio"]
+        self.seed = FAKEAVCELEB_SPLIT["seed"]
 
         self.metadata = self.get_metadata()
 
@@ -76,8 +53,9 @@ class FakeAVCelebDataset(SimpleAudioFakeDataset):
             ]
 
             samples_list = fake_samples.iterrows()
+            samples_list = self.split_samples(samples_list)
 
-            for index, sample in samples_list:
+            for _, sample in samples_list:
                 samples["user_id"].append(sample["source"])
                 samples["sample_name"].append(Path(sample["filename"]).stem)
                 samples["attack_type"].append(sample["method"])
@@ -115,34 +93,6 @@ class FakeAVCelebDataset(SimpleAudioFakeDataset):
         return Path(self.path) / path / Path(sample["filename"]).with_suffix(self.audio_extension)
 
 
-class FakeAVCelebDatasetNoFold(FakeAVCelebDataset):
-    def get_fake_samples(self):
-        samples = {
-            "user_id": [],
-            "sample_name": [],
-            "attack_type": [],
-            "label": [],
-            "path": []
-        }
-
-        for attack_name in self.allowed_attacks:
-            fake_samples = self.metadata[
-                (self.metadata["method"] == attack_name) & (self.metadata["audio_type"] == "FakeAudio")
-            ]
-
-            samples_list = fake_samples.iterrows()
-            samples_list = self.split_samples(samples_list)
-
-            for index, sample in samples_list:
-                samples["user_id"].append(sample["source"])
-                samples["sample_name"].append(Path(sample["filename"]).stem)
-                samples["attack_type"].append(sample["method"])
-                samples["label"].append("spoof")
-                samples["path"].append(self.get_file_path(sample))
-
-        return pd.DataFrame(samples)
-
-
 if __name__ == "__main__":
     FAKEAVCELEB_DATASET_PATH = "/home/adminuser/storage/datasets/deep_fakes/FakeAVCeleb/FakeAVCeleb_v1.2"
 
@@ -151,7 +101,7 @@ if __name__ == "__main__":
     datasets = []
 
     for subset in ['train', 'test', 'val']:
-        dataset = FakeAVCelebDatasetNoFold(FAKEAVCELEB_DATASET_PATH, fold_num=-1, fold_subset=subset)
+        dataset = FakeAVCelebDataset(FAKEAVCELEB_DATASET_PATH, subset=subset)
 
         real_samples = dataset.samples[dataset.samples['label'] == 'bonafide']
         real += len(real_samples)

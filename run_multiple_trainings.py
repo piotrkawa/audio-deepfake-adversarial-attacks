@@ -26,7 +26,6 @@ if __name__ == "__main__":
             "--batch_size", "64",
             "--epochs", "3",
             f"--config {current_config}",
-            "--no_fold",
             "--amount",
             "1000"
         ]

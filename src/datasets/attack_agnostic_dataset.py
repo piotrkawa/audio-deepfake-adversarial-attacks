@@ -3,42 +3,43 @@ from typing import List, Optional
 
 import pandas as pd
 
-from src.datasets.asvspoof_dataset import ASVSpoofDataset
 from src.datasets.base_dataset import SimpleAudioFakeDataset
-from src.datasets.deepfake_asvspoof_dataset import \
-    DeepFakeASVSpoofDatasetNoFold
-from src.datasets.fakeavceleb_dataset import (FakeAVCelebDataset,
-                                              FakeAVCelebDatasetNoFold)
-from src.datasets.wavefake_dataset import (WaveFakeDataset,
-                                           WaveFakeDatasetNoFold)
+from src.datasets.deepfake_asvspoof_dataset import DeepFakeASVSpoofDataset
+from src.datasets.fakeavceleb_dataset import FakeAVCelebDataset
+from src.datasets.wavefake_dataset import WaveFakeDataset
+
 
 LOGGER = logging.getLogger()
 
 
-class AttackAgnosticDataset(SimpleAudioFakeDataset):
+class NoFoldDataset(SimpleAudioFakeDataset):
 
     def __init__(
         self,
         asvspoof_path=None,
         wavefake_path=None,
         fakeavceleb_path=None,
-        fold_num=0,
-        fold_subset="val",
+        subset: str = "val",
         transform=None,
-        oversample=True,
-        undersample=False,
-        return_label=True,
-        reduced_number=None,
-        return_meta=False,
-        return_raw=False
+        oversample: bool = True,
+        undersample: bool = False,
+        return_label: bool = True,
+        reduced_number: Optional[int] = None,
+        return_meta: bool = False,
+        return_raw: bool = False
     ):
-        super().__init__(fold_num, fold_subset, transform, return_label, return_meta, return_raw)
+        super().__init__(
+            subset=subset,
+            transform=transform,
+            return_label=return_label,
+            return_meta=return_meta,
+            return_raw=return_raw,
+        )
         datasets = self._init_datasets(
             asvspoof_path=asvspoof_path,
             wavefake_path=wavefake_path,
             fakeavceleb_path=fakeavceleb_path,
-            fold_num=fold_num,
-            fold_subset=fold_subset,
+            subset=subset,
         )
         self.samples = pd.concat(
             [ds.samples for ds in datasets],
@@ -62,23 +63,24 @@ class AttackAgnosticDataset(SimpleAudioFakeDataset):
         asvspoof_path: Optional[str],
         wavefake_path: Optional[str],
         fakeavceleb_path: Optional[str],
-        fold_num: int,
-        fold_subset: str,
+        subset: str,
     ) -> List[SimpleAudioFakeDataset]:
         datasets = []
 
         if asvspoof_path is not None:
-            asvspoof_dataset = ASVSpoofDataset(asvspoof_path, fold_num=fold_num, fold_subset=fold_subset)
+            asvspoof_dataset = DeepFakeASVSpoofDataset(asvspoof_path, subset=subset)
             datasets.append(asvspoof_dataset)
 
         if wavefake_path is not None:
-            wavefake_dataset = WaveFakeDataset(wavefake_path, fold_num=fold_num, fold_subset=fold_subset)
+            wavefake_dataset = WaveFakeDataset(wavefake_path, subset=subset)
             datasets.append(wavefake_dataset)
 
         if fakeavceleb_path is not None:
-            fakeavceleb_dataset = FakeAVCelebDataset(fakeavceleb_path, fold_num=fold_num, fold_subset=fold_subset)
+            fakeavceleb_dataset = FakeAVCelebDataset(fakeavceleb_path, subset=subset)
             datasets.append(fakeavceleb_dataset)
+
         return datasets
+
 
     def oversample_dataset(self):
         samples = self.samples.groupby(by=['label'])
@@ -116,28 +118,3 @@ class AttackAgnosticDataset(SimpleAudioFakeDataset):
         self.samples = samples.get_group("spoof")
         return self.samples
 
-
-class NoFoldDataset(AttackAgnosticDataset):
-    def _init_datasets(
-        self,
-        asvspoof_path: Optional[str],
-        wavefake_path: Optional[str],
-        fakeavceleb_path: Optional[str],
-        fold_num: int,
-        fold_subset: str,
-    ) -> List[SimpleAudioFakeDataset]:
-        datasets = []
-
-        if asvspoof_path is not None:
-            asvspoof_dataset = DeepFakeASVSpoofDatasetNoFold(asvspoof_path, fold_num=fold_num, fold_subset=fold_subset)
-            datasets.append(asvspoof_dataset)
-
-        if wavefake_path is not None:
-            wavefake_dataset = WaveFakeDatasetNoFold(wavefake_path, fold_num=fold_num, fold_subset=fold_subset)
-            datasets.append(wavefake_dataset)
-
-        if fakeavceleb_path is not None:
-            fakeavceleb_dataset = FakeAVCelebDatasetNoFold(fakeavceleb_path, fold_num=fold_num, fold_subset=fold_subset)
-            datasets.append(fakeavceleb_dataset)
-
-        return datasets

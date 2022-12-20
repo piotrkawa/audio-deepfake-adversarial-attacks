@@ -8,8 +8,7 @@ from typing import Dict, List, Optional, Tuple, Union
 import torch
 import yaml
 
-from src.datasets.attack_agnostic_dataset import (AttackAgnosticDataset,
-                                                  NoFoldDataset)
+from src.datasets.attack_agnostic_dataset import NoFoldDataset
 from src.models import models
 from src.trainer import GDTrainer
 from src.utils import set_seed
@@ -35,48 +34,24 @@ def save_model(
 
 def get_datasets(
     datasets_paths: List[Union[Path, str]],
-    fold: int,
     amount_to_use: Optional[int]
-    ) -> Union[Tuple[NoFoldDataset, NoFoldDataset], Tuple[AttackAgnosticDataset, AttackAgnosticDataset]]:
-    if fold == -1:
-        data_train = NoFoldDataset(
-            asvspoof_path=datasets_paths[0],
-            wavefake_path=datasets_paths[1],
-            fakeavceleb_path=datasets_paths[2],
-            fold_num=fold,
-            fold_subset="train",
-            reduced_number=512,
-            oversample=True,
-        )
-        data_test = NoFoldDataset(
-            asvspoof_path=datasets_paths[0],
-            wavefake_path=datasets_paths[1],
-            fakeavceleb_path=datasets_paths[2],
-            fold_num=fold,
-            fold_subset="test",
-            reduced_number=128,
-            oversample=True,
-        )
-    else:
-        data_train = AttackAgnosticDataset(
-            asvspoof_path=datasets_paths[0],
-            wavefake_path=datasets_paths[1],
-            fakeavceleb_path=datasets_paths[2],
-            fold_num=fold,
-            fold_subset="train",
-            reduced_number=amount_to_use,
-            oversample=True,
-        )
-
-        data_test = AttackAgnosticDataset(
-            asvspoof_path=datasets_paths[0],
-            wavefake_path=datasets_paths[1],
-            fakeavceleb_path=datasets_paths[2],
-            fold_num=fold,
-            fold_subset="test",
-            reduced_number=amount_to_use,
-            oversample=True,
-        )
+) -> Tuple[NoFoldDataset, NoFoldDataset]:
+    data_train = NoFoldDataset(
+        asvspoof_path=datasets_paths[0],
+        wavefake_path=datasets_paths[1],
+        fakeavceleb_path=datasets_paths[2],
+        subset="train",
+        reduced_number=amount_to_use,
+        oversample=True,
+    )
+    data_test = NoFoldDataset(
+        asvspoof_path=datasets_paths[0],
+        wavefake_path=datasets_paths[1],
+        fakeavceleb_path=datasets_paths[2],
+        subset="test",
+        reduced_number=amount_to_use,
+        oversample=True,
+    )
 
     return data_train, data_test
 
@@ -89,7 +64,6 @@ def train_nn(
     config: Dict,
     model_dir: Optional[Path] = None,
     amount_to_use: Optional[int] = None,
-    no_fold: bool = False,
     config_save_path: str = "configs",
 ) -> None:
 
@@ -99,54 +73,49 @@ def train_nn(
     optimizer_config = model_config["optimizer"]
 
     timestamp = time.time()
-    checkpoint_paths = []
-    folds = [0, 1, 2] if not no_fold else [-1]
+    checkpoint_path = ""
 
-    for fold in folds:
+    data_train, data_test = get_datasets(
+        datasets_paths=datasets_paths,
+        amount_to_use=amount_to_use,
+    )
 
-        data_train, data_test = get_datasets(
-            datasets_paths=datasets_paths,
-            fold=fold,
-            amount_to_use=amount_to_use,
-        )
+    current_model = models.get_model(
+        model_name=model_name,
+        config=model_parameters,
+        device=device,
+    ).to(device)
 
-        current_model = models.get_model(
-            model_name=model_name,
-            config=model_parameters,
-            device=device,
-        ).to(device)
+    use_scheduler = "rawnet3" in model_name.lower()
 
-        use_scheduler = "rawnet3" in model_name.lower()
+    LOGGER.info(f"Training '{model_name}' model on {len(data_train)} audio files.")
 
-        LOGGER.info(f"Training '{model_name}' model on {len(data_train)} audio files.")
+    current_model = GDTrainer(
+        device=device,
+        batch_size=batch_size,
+        epochs=epochs,
+        optimizer_kwargs=optimizer_config,
+        use_scheduler=use_scheduler,
+    ).train(
+        dataset=data_train,
+        model=current_model,
+        test_dataset=data_test,
+    )
 
-        current_model = GDTrainer(
-            device=device,
-            batch_size=batch_size,
-            epochs=epochs,
-            optimizer_kwargs=optimizer_config,
-            use_scheduler=use_scheduler,
-        ).train(
-            dataset=data_train,
+    if model_dir is not None:
+        save_name = f"aad__{model_name}__{timestamp}"
+        save_model(
             model=current_model,
-            test_dataset=data_test,
-            logging_prefix=f"fold_{fold}",
+            model_dir=model_dir,
+            name=save_name,
         )
+        checkpoint_path= str(model_dir.resolve() / save_name / "ckpt.pth")
 
-        if model_dir is not None:
-            save_name = f"aad__{model_name}_fold_{fold}__{timestamp}"
-            save_model(
-                model=current_model,
-                model_dir=model_dir,
-                name=save_name,
-            )
-            checkpoint_paths.append(str(model_dir.resolve() / save_name / "ckpt.pth"))
-
-        LOGGER.info(f"Training model on fold [{fold+1}/{len(folds)}] done!")
+    LOGGER.info(f"Training done!")
 
     # Save config for testing
     if model_dir is not None:
-        config["checkpoint"] = {"paths": checkpoint_paths}
+        config["checkpoint"] = {"path": checkpoint_path}
         config_name = f"aad__{model_name}__{timestamp}.yaml"
         config_save_path = str(Path(config_save_path) / config_name)
         with open(config_save_path, "w") as f:
@@ -180,7 +149,6 @@ def main(args):
         epochs=args.epochs,
         model_dir=model_dir,
         config=config,
-        no_fold=args.no_fold,
     )
 
 
@@ -257,10 +225,6 @@ def parse_args():
 
     parser.add_argument(
         "--verbose", "-v", help="Display debug information?", action="store_true"
-    )
-
-    parser.add_argument(
-        "--no_fold", help="Use no fold version of the dataset", action="store_true"
     )
 
     return parser.parse_args()

@@ -7,14 +7,12 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
 import torch
-import tqdm
 import yaml
 from torch import nn
 
 from adversarial_attacks_generator.adversarial_training_types import \
     AdversarialGDTrainerEnum
-from src.datasets.attack_agnostic_dataset import (AttackAgnosticDataset,
-                                                  NoFoldDataset)
+from src.datasets.attack_agnostic_dataset import NoFoldDataset
 from src.models import models
 from src.trainer import save_model
 from src.utils import set_seed
@@ -30,49 +28,25 @@ LOGGER.addHandler(ch)
 
 def get_datasets(
     datasets_paths: List[Union[Path, str]],
-    fold: int,
     amount_to_use: Optional[int]
-    ) -> Union[Tuple[NoFoldDataset, NoFoldDataset], Tuple[AttackAgnosticDataset, AttackAgnosticDataset]]:
-    if fold == -1:
-        data_train = NoFoldDataset(
-            asvspoof_path=datasets_paths[0],
-            wavefake_path=datasets_paths[1],
-            fakeavceleb_path=datasets_paths[2],
-            fold_num=fold,
-            fold_subset="train",
-            reduced_number=100_000,
-            oversample=True,
-        )
+) -> Tuple[NoFoldDataset, NoFoldDataset]:
+    data_train = NoFoldDataset(
+        asvspoof_path=datasets_paths[0],
+        wavefake_path=datasets_paths[1],
+        fakeavceleb_path=datasets_paths[2],
+        subset="train",
+        reduced_number=amount_to_use,
+        oversample=True,
+    )
 
-        data_test = NoFoldDataset(
-            asvspoof_path=datasets_paths[0],
-            wavefake_path=datasets_paths[1],
-            fakeavceleb_path=datasets_paths[2],
-            fold_num=fold,
-            fold_subset="test",
-            reduced_number=10_000,
-            oversample=True,
-        )
-    else:
-        data_train = AttackAgnosticDataset(
-            asvspoof_path=datasets_paths[0],
-            wavefake_path=datasets_paths[1],
-            fakeavceleb_path=datasets_paths[2],
-            fold_num=fold,
-            fold_subset="train",
-            reduced_number=amount_to_use,
-            oversample=True,
-        )
-
-        data_test = AttackAgnosticDataset(
-            asvspoof_path=datasets_paths[0],
-            wavefake_path=datasets_paths[1],
-            fakeavceleb_path=datasets_paths[2],
-            fold_num=fold,
-            fold_subset="test",
-            reduced_number=amount_to_use,
-            oversample=True,
-        )
+    data_test = NoFoldDataset(
+        asvspoof_path=datasets_paths[0],
+        wavefake_path=datasets_paths[1],
+        fakeavceleb_path=datasets_paths[2],
+        subset="test",
+        reduced_number=amount_to_use,
+        oversample=True,
+    )
     return data_train, data_test
 
 
@@ -87,7 +61,6 @@ def train_nn(
     model_dir: Optional[Path] = None,
     amount_to_use: Optional[int] = None,
     config_save_path: str = "configs",
-    no_fold: bool = False,
     adv_training_strategy: str = AdversarialGDTrainerEnum.RANDOM.name,
     is_finetune: bool = False,
 ) -> None:
@@ -100,78 +73,73 @@ def train_nn(
 
     timestamp = time.time()
     checkpoint_paths = []
-    folds = [0, 1, 2] if not no_fold else [-1]
 
-    for fold_no, fold in enumerate(tqdm.tqdm(folds)):
-        data_train, data_test = get_datasets(
-            datasets_paths=datasets_paths,
-            fold=fold,
-            amount_to_use=amount_to_use,
-        )
+    data_train, data_test = get_datasets(
+        datasets_paths=datasets_paths,
+        amount_to_use=amount_to_use,
+    )
 
-        current_model = models.get_model(
-            model_name=model_name,
-            config=model_config["parameters"],
-            device=device,
-        )
+    current_model = models.get_model(
+        model_name=model_name,
+        config=model_config["parameters"],
+        device=device,
+    )
 
-        if is_finetune:
-            assert config["checkpoint"]["paths"][0], "Finetune requires to provide checkpoint"
-            assert len(config["checkpoint"]["paths"]) == 1, "Only NO_FOLD is currently supported"
+    if is_finetune:
+        assert config["checkpoint"]["path"], "Finetune requires to provide checkpoint"
 
-            weights_path = config["checkpoint"]["paths"][0]
-            lr = config["model"]["optimizer"]["lr"]
-            LOGGER.info(f"Adversarial finetuning! Architecture: '{model_name}', lr: {lr}, weights: '{weights_path}'!")
-            current_model.load_state_dict(torch.load(weights_path))
+        weights_path = config["checkpoint"]["path"]
+        lr = config["model"]["optimizer"]["lr"]
+        LOGGER.info(f"Adversarial finetuning! Architecture: '{model_name}', lr: {lr}, weights: '{weights_path}'!")
+        current_model.load_state_dict(torch.load(weights_path))
 
-        current_model = current_model.to(device)
-        current_model = nn.DataParallel(current_model)
+    current_model = current_model.to(device)
+    current_model = nn.DataParallel(current_model)
 
-        use_scheduler = "rawnet3" in model_name.lower()
+    use_scheduler = "rawnet3" in model_name.lower()
 
-        if attack_config is not None:
-            LOGGER.info(f"Load attack model based on attack config")
-            # If we dot provde attack_config - then we prepare attacks using the trained model.
-            attack_model_name = attack_config["model"]["name"]
-            attack_model = load_model(attack_config, fold, device)
-            attack_model = nn.DataParallel(attack_model)
-            attack_info = f"{attack_model_name} (pretrained) {attack_config['checkpoint']['paths'][0]}"
-        else:
-            LOGGER.info(f"Use target model as attack model")
-            attack_model = current_model
-            attack_info = model_name
+    if attack_config is not None:
+        LOGGER.info(f"Load attack model based on attack config")
+        # If we dot provde attack_config - then we prepare attacks using the trained model.
+        attack_model_name = attack_config["model"]["name"]
+        attack_model = load_model(attack_config, device)
+        attack_model = nn.DataParallel(attack_model)
+        attack_info = f"{attack_model_name} (pretrained) {attack_config['checkpoint']['paths'][0]}"
+    else:
+        LOGGER.info(f"Use target model as attack model")
+        attack_model = current_model
+        attack_info = model_name
 
-        LOGGER.info(f"Training '{model_name}', attacking using: '{attack_info}' model on {len(data_train)} audio files.")
-        LOGGER.info(f"Adversarial training strategy: {adv_training_strategy}")
+    LOGGER.info(f"Training '{model_name}', attacking using: '{attack_info}' model on {len(data_train)} audio files.")
+    LOGGER.info(f"Adversarial training strategy: {adv_training_strategy}")
 
-        save_name = f"aad__{model_name}_fold_{fold}__{timestamp}"
+    save_name = f"aad__{model_name}_{timestamp}"
 
-        current_model = AdversarialGDTrainerEnum[adv_training_strategy].value(
-            device=device,
-            batch_size=batch_size,
-            epochs=epochs,
-            optimizer_kwargs=optimizer_config,
-            use_scheduler=use_scheduler,
-        ).train(
-            dataset=data_train,
+    current_model = AdversarialGDTrainerEnum[adv_training_strategy].value(
+        device=device,
+        batch_size=batch_size,
+        epochs=epochs,
+        optimizer_kwargs=optimizer_config,
+        use_scheduler=use_scheduler,
+    ).train(
+        dataset=data_train,
+        model=current_model,
+        attack_model=attack_model,
+        test_dataset=data_test,
+        adversarial_attacks=adversarial_attacks,
+        model_dir=model_dir,
+        save_model_name=save_name
+    )
+
+    if model_dir is not None:
+        save_model(
             model=current_model,
-            attack_model=attack_model,
-            test_dataset=data_test,
-            logging_prefix=f"fold_{fold}",
-            adversarial_attacks=adversarial_attacks,
             model_dir=model_dir,
-            save_model_name=save_name
+            name=save_name,
         )
+        checkpoint_paths.append(str(model_dir.resolve() / save_name / "ckpt.pth"))
 
-        if model_dir is not None:
-            save_model(
-                model=current_model,
-                model_dir=model_dir,
-                name=save_name,
-            )
-            checkpoint_paths.append(str(model_dir.resolve() / save_name / "ckpt.pth"))
-
-        LOGGER.info(f"Training model on fold [{fold+1}/{len(folds)}] done!")
+    LOGGER.info(f"Training model done!")
 
     # Save config for testing
     if model_dir is not None:
@@ -217,32 +185,26 @@ def main(args):
         config=config,
         attack_config=attack_model_config,
         adversarial_attacks=config["data"].get("adversarial_attacks", []),
-        no_fold=args.no_fold,
         adv_training_strategy=args.adv_training_strategy,
         is_finetune=args.finetune,
     )
 
 
-def load_model(model_config, fold: int = 0, device: str = "cuda"):
+def load_model(model_config, device: str = "cuda"):
     model_name, model_parameters = model_config["model"]["name"], model_config["model"]["parameters"]
-    model_paths = model_config["checkpoint"].get("paths", [])
+    model_path = model_config["checkpoint"].get("path", "")
 
     model = models.get_model(
         model_name=model_name, config=model_parameters, device=device,
     )
-    # If provided weights, apply corresponding ones (from an appropriate fold)
-    weights_path = ""
     # It was our pain!
-    if len(model_paths) >= 1:
-        assert len(model_paths) == 3 or len(model_paths) == 1, "Pass either 0, 1 or 3 weights path"
-        weights_path = model_paths[fold]
-
+    if model_path:
         model.load_state_dict(
-            torch.load(weights_path)
+            torch.load(model_path)
         )
-        LOGGER.info("Loaded weigths on '%s' model, path: %s", model_name, weights_path)
+        LOGGER.info("Loaded weigths on '%s' model, path: %s", model_name, model_path)
     model = model.to(device)
-    model.weights_path = weights_path
+    model.weights_path = model_path
 
     return model
 
@@ -339,12 +301,6 @@ def parse_args():
 
     parser.add_argument(
         "--finetune", help="Finetune using checkpoint provided in a config", action="store_true"
-    )
-
-    parser.add_argument(
-        "--no_fold", 
-        help="Use no fold version of the dataset", 
-        action="store_true"
     )
 
     return parser.parse_args()

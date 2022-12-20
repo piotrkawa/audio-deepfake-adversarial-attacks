@@ -48,7 +48,6 @@ if __name__ == "__main__":
         command = [
             f"python train_models_with_adversarial_attacks.py "
             f"--config {config}",
-            "--no_fold",
             "--epochs 10",
             f"--adv_training_strategy {args.adv_training_strategy}",
             f"--asv_path {args.data_path}/ASVspoof2021/DF",

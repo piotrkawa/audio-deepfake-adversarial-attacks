@@ -43,7 +43,7 @@ class AttackPostAnalyser:
     def save_plots(self, false_samples, batch_x, batch_x_attacked, batch_metadata, suffix):
         for i in false_samples:
             src_path = Path(batch_metadata[i][1])
-            fold, subset, sec_length = batch_metadata[i][2], batch_metadata[i][3], batch_metadata[i][4]
+            subset, sec_length = batch_metadata[i][2], batch_metadata[i][3]
 
             if "WaveFake" in str(src_path) or "FakeAVCeleb" in str(src_path):
                 src_folder = src_path.parent.relative_to(src_path.parents[1])
@@ -51,7 +51,7 @@ class AttackPostAnalyser:
             else:
                 file_name = src_path.stem
 
-            file_name = f"{file_name}_{subset}_fold{fold}_{sec_length:.2f}sec_{suffix}"
+            file_name = f"{file_name}_{subset}_{sec_length:.2f}sec_{suffix}"
 
             self.save_plot(file_name, batch_x[i], batch_x_attacked[i], (1100, 1200))
 
