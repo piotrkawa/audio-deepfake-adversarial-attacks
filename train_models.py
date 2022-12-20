@@ -8,7 +8,7 @@ from typing import Dict, List, Optional, Tuple, Union
 import torch
 import yaml
 
-from src.datasets.attack_agnostic_dataset import NoFoldDataset
+from src.datasets.detection_dataset import DetectionDataset
 from src.models import models
 from src.trainer import GDTrainer
 from src.utils import set_seed
@@ -35,8 +35,8 @@ def save_model(
 def get_datasets(
     datasets_paths: List[Union[Path, str]],
     amount_to_use: Optional[int]
-) -> Tuple[NoFoldDataset, NoFoldDataset]:
-    data_train = NoFoldDataset(
+) -> Tuple[DetectionDataset, DetectionDataset]:
+    data_train = DetectionDataset(
         asvspoof_path=datasets_paths[0],
         wavefake_path=datasets_paths[1],
         fakeavceleb_path=datasets_paths[2],
@@ -44,7 +44,7 @@ def get_datasets(
         reduced_number=amount_to_use,
         oversample=True,
     )
-    data_test = NoFoldDataset(
+    data_test = DetectionDataset(
         asvspoof_path=datasets_paths[0],
         wavefake_path=datasets_paths[1],
         fakeavceleb_path=datasets_paths[2],
@@ -222,10 +222,6 @@ def parse_args():
     )
 
     parser.add_argument("--cpu", "-c", help="Force using cpu?", action="store_true")
-
-    parser.add_argument(
-        "--verbose", "-v", help="Display debug information?", action="store_true"
-    )
 
     return parser.parse_args()
 

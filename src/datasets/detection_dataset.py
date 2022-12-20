@@ -12,7 +12,7 @@ from src.datasets.wavefake_dataset import WaveFakeDataset
 LOGGER = logging.getLogger()
 
 
-class NoFoldDataset(SimpleAudioFakeDataset):
+class DetectionDataset(SimpleAudioFakeDataset):
 
     def __init__(
         self,

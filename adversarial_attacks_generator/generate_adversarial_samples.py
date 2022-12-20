@@ -16,7 +16,7 @@ from adversarial_attacks_generator import utils
 from adversarial_attacks_generator.attacks import AttackEnum
 from adversarial_attacks_generator.qualitative.attacks_analysis import \
     AttackAnalyser
-from src.datasets.attack_agnostic_dataset import NoFoldDataset
+from src.datasets.detection_dataset import DetectionDataset
 from src.metrics import calculate_eer
 from src.models import models
 from src.utils import set_seed
@@ -256,7 +256,7 @@ def generate_attacks(
         with torch.no_grad():
             # here we run preprocessing with defaults parameters WAVE_FAKE_CUT, WAVE_FAKE_TRIM, WAVE_FAKE_SR, etc.
             if raw_sample_from_dataset:
-                batch_x_attacked, _ = NoFoldDataset.wavefake_preprocessing_on_batch(
+                batch_x_attacked, _ = DetectionDataset.wavefake_preprocessing_on_batch(
                     batch_x_attacked,
                     batch_sr,
                 )
@@ -267,7 +267,7 @@ def generate_attacks(
 
             if on_attack_end_callback is not None:
                 if raw_sample_from_dataset:
-                    batch_x, _ = NoFoldDataset.wavefake_preprocessing_on_batch(
+                    batch_x, _ = DetectionDataset.wavefake_preprocessing_on_batch(
                         batch_x,
                         batch_sr,
                     )
@@ -330,8 +330,8 @@ def get_dataset(
     datasets_paths: List[Union[Path, str]],
     amount_to_use: Optional[int],
     raw_sample_from_dataset: bool = False
-) -> NoFoldDataset:
-    data_val = NoFoldDataset(
+) -> DetectionDataset:
+    data_val = DetectionDataset(
         asvspoof_path=datasets_paths[0],
         wavefake_path=datasets_paths[1],
         fakeavceleb_path=datasets_paths[2],

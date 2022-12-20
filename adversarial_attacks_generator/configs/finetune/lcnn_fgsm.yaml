@@ -11,19 +11,9 @@ checkpoint:
   ]
 
 model:
-  name: "frontend_lcnn"
+  name: "lcnn"
   parameters:
     frontend_algorithm: ["lfcc"]
     input_channels: 1
   optimizer:
     lr: 0.0001
-
-logging:
- log_metrics: True
- existing_experiment_id: ""  # specify if you want to continue certain neptune experiment
- name: "LCNN Adversarial Training - FGSM attacks"
- description: ""
- tags: ["no_fold"]
-
-
-

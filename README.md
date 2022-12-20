@@ -36,12 +36,10 @@ data:
 
 checkpoint: 
   # This part is used only in evaluation 
-  paths: [
-      "trained_models/aad__lcnn/ckpt.pth",
-  ]
+  paths: "trained_models/aad__lcnn/ckpt.pth",
 
 model:
-  name: "frontend_lcnn"  # {"frontend_lcnn", "frontend_specrnet", "rawnet3"}
+  name: "lcnn"  # {"lcnn", "specrnet", "rawnet3"}
   parameters:
     input_channels: 1
   optimizer:
@@ -57,7 +55,7 @@ To train models use `train_models.py`.
 
 
 ```
-usage: train_models.py [-h] [--asv_path ASV_PATH] [--wavefake_path WAVEFAKE_PATH] [--celeb_path CELEB_PATH] [--config CONFIG] [--amount AMOUNT] [--batch_size BATCH_SIZE] [--epochs EPOCHS] [--ckpt CKPT] [--cpu] [--verbose] [--use_gmm] [--clusters CLUSTERS] [--lfcc]
+usage: train_models.py [-h] [--asv_path ASV_PATH] [--wavefake_path WAVEFAKE_PATH] [--celeb_path CELEB_PATH] [--config CONFIG] [--amount AMOUNT] [--batch_size BATCH_SIZE] [--epochs EPOCHS] [--ckpt CKPT] [--cpu]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -75,7 +73,6 @@ optional arguments:
                         Epochs (default: 5).
   --ckpt CKPT           Checkpoint directory (default: trained_models).
   --cpu, -c             Force using cpu?
-  --verbose, -v         Display debug information?
 ```
 
 ## Evaluate models
@@ -111,12 +108,12 @@ python evaluate_models.py --config configs/training/lcnn.yaml --asv_path ../data
 
 Attack LCNN network using white-box setting with FGSM attack:
 ```bash
-python generate_adversarial_samples.py --attack FGSM --config configs/frontend_lcnn.yaml --attack_model_config configs/frontend_lcnn.yaml --no_fold --raw_from_dataset
+python generate_adversarial_samples.py --attack FGSM --config configs/frontend_lcnn.yaml --attack_model_config configs/frontend_lcnn.yaml --raw_from_dataset
 ```
 
 Attack LCNN network using transferability setting with FGSM attack based on RawNet3:
 ```bash
-python generate_adversarial_samples.py --attack FGSM --config configs/frontend_lcnn.yaml --attack_model_config configs/rawnet3.yaml --no_fold --raw_from_dataset
+python generate_adversarial_samples.py --attack FGSM --config configs/frontend_lcnn.yaml --attack_model_config configs/rawnet3.yaml --raw_from_dataset
 ```
 
 ## Adversarial Training
@@ -124,7 +121,7 @@ python generate_adversarial_samples.py --attack FGSM --config configs/frontend_l
 
 Finetune LCNN model for 10 epochs using a `` strategy:
 ```bash
-python train_models_with_adversarial_attacks.py --config {config} --no_fold --epochs 10 --adv_training_strategy {args.adv_training_strategy} --attack_model_config {attack_model_config} --finetune
+python train_models_with_adversarial_attacks.py --config {config} --epochs 10 --adv_training_strategy {args.adv_training_strategy} --attack_model_config {attack_model_config} --finetune
 ```
 
 ## Acknowledgments

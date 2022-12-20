@@ -12,7 +12,7 @@ from torch import nn
 
 from adversarial_attacks_generator.adversarial_training_types import \
     AdversarialGDTrainerEnum
-from src.datasets.attack_agnostic_dataset import NoFoldDataset
+from src.datasets.detection_dataset import DetectionDataset
 from src.models import models
 from src.trainer import save_model
 from src.utils import set_seed
@@ -29,8 +29,8 @@ LOGGER.addHandler(ch)
 def get_datasets(
     datasets_paths: List[Union[Path, str]],
     amount_to_use: Optional[int]
-) -> Tuple[NoFoldDataset, NoFoldDataset]:
-    data_train = NoFoldDataset(
+) -> Tuple[DetectionDataset, DetectionDataset]:
+    data_train = DetectionDataset(
         asvspoof_path=datasets_paths[0],
         wavefake_path=datasets_paths[1],
         fakeavceleb_path=datasets_paths[2],
@@ -39,7 +39,7 @@ def get_datasets(
         oversample=True,
     )
 
-    data_test = NoFoldDataset(
+    data_test = DetectionDataset(
         asvspoof_path=datasets_paths[0],
         wavefake_path=datasets_paths[1],
         fakeavceleb_path=datasets_paths[2],

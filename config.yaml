@@ -18,7 +18,7 @@ checkpoint:
   path: ""
 
 model:
-  name: "frontend_lcnn"
+  name: "lcnn"
   parameters:
     input_channels: 1
     frontend_algorithm: ["lfcc"]

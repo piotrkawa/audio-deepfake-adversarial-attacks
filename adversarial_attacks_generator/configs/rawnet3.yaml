@@ -17,10 +17,3 @@ model:
     lr: 0.001
     weight_decay: 0.00005  # 5e-5
     eta_min: 0.000005  # 5e-6
-
-logging:
-  log_metrics: True
-  existing_experiment_id: ""  # specify if you want to continue certain neptune experiment
-  name: "RawNet3 Adversarial Evaluation"
-  description: ""
-  tags: ["no_fold"]

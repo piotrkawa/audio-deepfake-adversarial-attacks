@@ -9,7 +9,7 @@ from sklearn.metrics import precision_recall_fscore_support, roc_auc_score
 from torch.utils.data import DataLoader
 
 from src import metrics, utils
-from src.datasets.attack_agnostic_dataset import NoFoldDataset
+from src.datasets.detection_dataset import DetectionDataset
 from src.models import models
 
 LOGGER = logging.getLogger()
@@ -24,8 +24,8 @@ LOGGER.addHandler(ch)
 def get_dataset(
     datasets_paths: List[Union[Path, str]],
     amount_to_use: Optional[int],
-) -> NoFoldDataset:
-    data_val = NoFoldDataset(
+) -> DetectionDataset:
+    data_val = DetectionDataset(
         asvspoof_path=datasets_paths[0],
         wavefake_path=datasets_paths[1],
         fakeavceleb_path=datasets_paths[2],
