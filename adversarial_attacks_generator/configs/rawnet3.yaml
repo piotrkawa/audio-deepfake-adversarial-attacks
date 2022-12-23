@@ -1,8 +1,5 @@
 data:
   seed: 42
-  cnn_features_setting:
-    frontend_algorithm: []  # ["mfcc"] or ["lfcc"] or ["mfcc", "lfcc"]
-    use_spectrogram: False
 
 checkpoint:
   paths: [

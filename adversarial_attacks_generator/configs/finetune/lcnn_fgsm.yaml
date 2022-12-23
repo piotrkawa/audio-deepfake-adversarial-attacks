@@ -1,8 +1,5 @@
 data:
   seed: 42
-  cnn_features_setting:
-    frontend_algorithm: []  # ["mfcc"] or ["lfcc"] or ["mfcc", "lfcc"] or []
-    use_spectrogram: False
   adversarial_attacks: ["FGSM", "FGSM_eps00075", "FGSM_eps001"]
 
 checkpoint:
