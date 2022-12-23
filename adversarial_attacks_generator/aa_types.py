@@ -1,10 +1,10 @@
 from enum import Enum
-
 from adversarial_attacks import torchattacks
 
 
 class AttackEnum(Enum):
 
+    # PGD is implemented while not used in the paper
     PGD = (torchattacks.PGD, {"eps": 0.0005, "steps": 10})
     PGD_eps00075 = (torchattacks.PGD, {"eps": 0.00075, "steps": 10})
     PGD_eps001 = (torchattacks.PGD, {"eps": 0.001, "steps": 10})
@@ -21,11 +21,6 @@ class AttackEnum(Enum):
     FAB_eta20 = (torchattacks.FAB, {"n_classes": 2, "eta": 20})
     FAB_eta30 = (torchattacks.FAB, {"n_classes": 2, "eta": 30})
 
-    CW = (torchattacks.CW, {"c": 1e-4})
-    CW_c3 = (torchattacks.CW, {"c": 1e-3})
-    CW_c2 = (torchattacks.CW, {"c": 1e-2})
-
-    APGDT = (torchattacks.APGDT, {"norm": 'L2', "eps": 0.1, "steps": 100})    # very weak
-
-    ONE_PIXEL = (torchattacks.OnePixel, {"pixels": 20})     # does not work well
     NO_ATTACK = (None, {})
+
+

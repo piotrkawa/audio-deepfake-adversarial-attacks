@@ -10,12 +10,11 @@ import torch
 import yaml
 from torch import nn
 
-from adversarial_attacks_generator.adversarial_training_types import \
-    AdversarialGDTrainerEnum
+from adversarial_attacks_generator.aa_trainer_types import AdversarialGDTrainerEnum
 from src.datasets.detection_dataset import DetectionDataset
 from src.models import models
 from src.trainer import save_model
-from src.utils import set_seed
+from src.utils import set_seed, load_model
 
 LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.INFO)
@@ -28,14 +27,14 @@ LOGGER.addHandler(ch)
 
 def get_datasets(
     datasets_paths: List[Union[Path, str]],
-    amount_to_use: Optional[int]
+    amount_to_use: Optional[Tuple[int, int]] = None
 ) -> Tuple[DetectionDataset, DetectionDataset]:
     data_train = DetectionDataset(
         asvspoof_path=datasets_paths[0],
         wavefake_path=datasets_paths[1],
         fakeavceleb_path=datasets_paths[2],
         subset="train",
-        reduced_number=amount_to_use,
+        reduced_number=amount_to_use[0],
         oversample=True,
     )
 
@@ -44,7 +43,7 @@ def get_datasets(
         wavefake_path=datasets_paths[1],
         fakeavceleb_path=datasets_paths[2],
         subset="test",
-        reduced_number=amount_to_use,
+        reduced_number=amount_to_use[1],
         oversample=True,
     )
     return data_train, data_test
@@ -59,7 +58,7 @@ def train_nn(
     attack_config: Optional[Dict],
     adversarial_attacks: List[str],
     model_dir: Optional[Path] = None,
-    amount_to_use: Optional[int] = None,
+    amount_to_use: Optional[Tuple[int, int]] = None,
     config_save_path: str = "configs",
     adv_training_strategy: str = AdversarialGDTrainerEnum.RANDOM.name,
     is_finetune: bool = False,
@@ -178,7 +177,7 @@ def main(args):
     train_nn(
         datasets_paths=[args.asv_path, args.wavefake_path, args.celeb_path],
         device=device,
-        amount_to_use=args.amount,
+        amount_to_use=(args.train_amount, args.test_amount),
         batch_size=args.batch_size,
         epochs=args.epochs,
         model_dir=model_dir,
@@ -188,25 +187,6 @@ def main(args):
         adv_training_strategy=args.adv_training_strategy,
         is_finetune=args.finetune,
     )
-
-
-def load_model(model_config, device: str = "cuda"):
-    model_name, model_parameters = model_config["model"]["name"], model_config["model"]["parameters"]
-    model_path = model_config["checkpoint"].get("path", "")
-
-    model = models.get_model(
-        model_name=model_name, config=model_parameters, device=device,
-    )
-    # It was our pain!
-    if model_path:
-        model.load_state_dict(
-            torch.load(model_path)
-        )
-        LOGGER.info("Loaded weigths on '%s' model, path: %s", model_name, model_path)
-    model = model.to(device)
-    model.weights_path = model_path
-
-    return model
 
 
 def parse_args():
@@ -250,13 +230,22 @@ def parse_args():
         default=None,
     )
 
-    default_amount = None
+    default_train_amount = 100_000
     parser.add_argument(
-        "--amount",
+        "--train_amount",
         "-a",
-        help=f"Amount of files to load - useful when debugging (default: {default_amount} - use all).",
+        help=f"Amount of files to load for training.",
         type=int,
-        default=default_amount,
+        default=default_train_amount,
+    )
+
+    default_test_amount = 10_000
+    parser.add_argument(
+        "--test_amount",
+        "-ta",
+        help=f"Amount of files to load for testing.",
+        type=int,
+        default=default_test_amount,
     )
 
     default_batch_size = 64

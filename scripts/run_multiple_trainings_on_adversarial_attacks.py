@@ -3,8 +3,7 @@ import subprocess
 
 import yaml
 
-from adversarial_attacks_generator.adversarial_training_types import \
-    AdversarialGDTrainerEnum
+from adversarial_attacks_generator.aa_types import AdversarialGDTrainerEnum
 
 
 def parse_args():
@@ -46,7 +45,7 @@ if __name__ == "__main__":
         attack_model_config = c.get("attack_model_config", None)
 
         command = [
-            f"python train_models_with_adversarial_attacks.py "
+            f"python train_models_on_adversarial_attacks.py "
             f"--config {config}",
             "--epochs 10",
             f"--adv_training_strategy {args.adv_training_strategy}",

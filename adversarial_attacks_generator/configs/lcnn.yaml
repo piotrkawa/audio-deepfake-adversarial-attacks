@@ -6,9 +6,7 @@ data:
   adversarial_attacks: ["FGSM"]
 
 checkpoint:
-  paths: [
-    "../trained_models/aad__frontend_lcnn_fold_-1__1665325273.8663843/ckpt.pth"
-  ]
+  path: "../trained_models/aad__frontend_lcnn_fold_-1__1665325273.8663843/ckpt.pth"
 
 model:
   name: "lcnn"

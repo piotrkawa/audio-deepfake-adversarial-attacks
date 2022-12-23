@@ -33,7 +33,7 @@ if __name__ == "__main__":
         attack_model_config = c["attack_model_config"]
 
         command = [
-            f"python generate_adversarial_samples.py "
+            f"python evaluate_models_on_adversarial_attacks.py "
             f"--attack {attack}",
             f"--config {config}",
             f"--attack_model_config {attack_model_config}",

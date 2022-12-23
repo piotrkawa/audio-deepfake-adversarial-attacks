@@ -5,10 +5,7 @@ data:
     use_spectrogram: False
 
 checkpoint:
-  paths: [
-    # "../trained_models/aad__rawnet3_fold_-1__1665387053.21383/ckpt.pth"
-    "../trained_models/aad__rawnet3_fold_-1__1665328006.207422/ckpt.pth",
-  ]
+  path: "../trained_models/aad__rawnet3_fold_-1__1665328006.207422/ckpt.pth"
 
 model:
   name: "rawnet3"
