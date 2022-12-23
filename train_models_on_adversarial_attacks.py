@@ -2,7 +2,6 @@ import argparse
 import logging
 import sys
 import time
-from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -10,7 +9,7 @@ import torch
 import yaml
 from torch import nn
 
-from adversarial_attacks_generator.aa_trainer_types import AdversarialGDTrainerEnum
+from src.aa.aa_trainer_types import AdversarialGDTrainerEnum
 from src.datasets.detection_dataset import DetectionDataset
 from src.models import models
 from src.trainer import save_model
@@ -283,10 +282,6 @@ def parse_args():
     )
 
     parser.add_argument("--cpu", "-c", help="Force using cpu?", action="store_true")
-
-    parser.add_argument(
-        "--verbose", "-v", help="Display debug information?", action="store_true"
-    )
 
     parser.add_argument(
         "--finetune", help="Finetune using checkpoint provided in a config", action="store_true"

@@ -10,8 +10,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from adversarial_attacks_generator import utils
-from adversarial_attacks_generator.aa_types import AttackEnum
+from src.aa import utils
+from src.aa.aa_types import AttackEnum
 
 
 LOGGER = logging.getLogger(__name__)

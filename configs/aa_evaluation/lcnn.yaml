@@ -1,0 +1,14 @@
+data:
+  seed: 42
+  adversarial_attacks: []
+
+checkpoint:
+  path: ""
+
+model:
+  name: "lcnn"
+  parameters:
+    frontend_algorithm: ["lfcc"]
+    input_channels: 1
+  optimizer:
+    lr: 0.0001

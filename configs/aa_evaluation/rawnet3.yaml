@@ -1,0 +1,14 @@
+data:
+  seed: 42
+  adversarial_attacks: : []
+
+checkpoint:
+  path: ""
+
+model:
+  name: "rawnet3"
+  parameters: {}
+  optimizer:
+    lr: 0.001
+    weight_decay: 0.00005  # 5e-5
+    eta_min: 0.000005  # 5e-6

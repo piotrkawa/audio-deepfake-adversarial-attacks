@@ -3,7 +3,7 @@ import subprocess
 
 import yaml
 
-from adversarial_attacks_generator.aa_types import AdversarialGDTrainerEnum
+from src.adversarial_attacks_generator.aa_types import AdversarialGDTrainerEnum
 
 
 def parse_args():

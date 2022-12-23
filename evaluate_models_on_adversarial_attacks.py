@@ -12,9 +12,9 @@ from sklearn.metrics import precision_recall_fscore_support, roc_auc_score
 from torch import nn
 from torch.utils.data import DataLoader
 
-from adversarial_attacks_generator import utils
-from adversarial_attacks_generator.aa_types import AttackEnum
-from adversarial_attacks_generator.qualitative.attacks_analysis import AttackAnalyser
+from src.aa import utils
+from src.aa.aa_types import AttackEnum
+from src.aa.qualitative.attacks_analysis import AttackAnalyser
 from src.datasets.detection_dataset import DetectionDataset
 from src.metrics import calculate_eer
 from src.utils import set_seed, load_model

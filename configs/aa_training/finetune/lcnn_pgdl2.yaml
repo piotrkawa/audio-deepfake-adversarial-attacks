@@ -1,0 +1,14 @@
+data:
+  seed: 42
+  adversarial_attacks: ["PGDL2", "PGDL2_eps15", "PGDL2_eps20"]
+
+checkpoint:
+  path: ""
+
+model:
+  name: "lcnn"
+  parameters:
+    frontend_algorithm: ["lfcc"]
+    input_channels: 1
+  optimizer:
+    lr: 0.0001
