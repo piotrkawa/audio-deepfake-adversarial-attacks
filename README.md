@@ -36,7 +36,7 @@ data:
 
 checkpoint: 
   # This part is used only in evaluation 
-  paths: "trained_models/aad__lcnn/ckpt.pth",
+  path: "trained_models/aad__lcnn/ckpt.pth",
 
 model:
   name: "lcnn"  # {"lcnn", "specrnet", "rawnet3"}

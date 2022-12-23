@@ -2,7 +2,6 @@ import argparse
 import logging
 import sys
 import time
-from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -294,10 +293,6 @@ def parse_args():
     )
 
     parser.add_argument("--cpu", "-c", help="Force using cpu?", action="store_true")
-
-    parser.add_argument(
-        "--verbose", "-v", help="Display debug information?", action="store_true"
-    )
 
     parser.add_argument(
         "--finetune", help="Finetune using checkpoint provided in a config", action="store_true"

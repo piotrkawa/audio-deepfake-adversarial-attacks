@@ -2,9 +2,7 @@ data:
   seed: 42
 
 checkpoint:
-  paths: [
-    "../trained_models/aad__frontend_specrnet_fold_-1__1665326541.6293828/ckpt.pth"
-  ]
+  path: ""
 
 model:
   name: "frontend_specrnet"

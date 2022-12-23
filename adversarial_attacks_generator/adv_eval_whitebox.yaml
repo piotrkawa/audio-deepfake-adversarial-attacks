@@ -1,125 +1,125 @@
 ---
 # LCNN
 - attack: "NO_ATTACK"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/lcnn.yaml
+  attack_model_config: configs/adversarial_evaluation/lcnn.yaml
 
 - attack: "FGSM"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/lcnn.yaml
+  attack_model_config: configs/adversarial_evaluation/lcnn.yaml
 
 - attack: "FGSM_eps00075"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/lcnn.yaml
+  attack_model_config: configs/adversarial_evaluation/lcnn.yaml
 
 - attack: "FGSM_eps001"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/lcnn.yaml
+  attack_model_config: configs/adversarial_evaluation/lcnn.yaml
 
 - attack: "PGDL2"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/lcnn.yaml
+  attack_model_config: configs/adversarial_evaluation/lcnn.yaml
 
 - attack: "PGDL2_eps15"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/lcnn.yaml
+  attack_model_config: configs/adversarial_evaluation/lcnn.yaml
 
 - attack: "PGDL2_eps20"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/lcnn.yaml
+  attack_model_config: configs/adversarial_evaluation/lcnn.yaml
 
 - attack: "FAB"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/lcnn.yaml
+  attack_model_config: configs/adversarial_evaluation/lcnn.yaml
 
 - attack: "FAB_eta20"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/lcnn.yaml
+  attack_model_config: configs/adversarial_evaluation/lcnn.yaml
 
 - attack: "FAB_eta30"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/lcnn.yaml
+  attack_model_config: configs/adversarial_evaluation/lcnn.yaml
 
 
 # RawNet3
 - attack: "NO_ATTACK"
-  config: configs/rawnet3.yaml
-  attack_model_config: configs/rawnet3.yaml
-
-- attack: "PGDL2"
-  config: configs/rawnet3.yaml
-  attack_model_config: configs/rawnet3.yaml
-
-- attack: "PGDL2_eps15"
-  config: configs/rawnet3.yaml
-  attack_model_config: configs/rawnet3.yaml
-
-- attack: "PGDL2_eps20"
-  config: configs/rawnet3.yaml
-  attack_model_config: configs/rawnet3.yaml
+  config: configs/adversarial_evaluation/rawnet3.yaml
+  attack_model_config: configs/adversarial_evaluation/rawnet3.yaml
 
 - attack: "FGSM"
-  config: configs/rawnet3.yaml
-  attack_model_config: configs/rawnet3.yaml
+  config: configs/adversarial_evaluation/rawnet3.yaml
+  attack_model_config: configs/adversarial_evaluation/rawnet3.yaml
 
 - attack: "FGSM_eps00075"
-  config: configs/rawnet3.yaml
-  attack_model_config: configs/rawnet3.yaml
+  config: configs/adversarial_evaluation/rawnet3.yaml
+  attack_model_config: configs/adversarial_evaluation/rawnet3.yaml
 
 - attack: "FGSM_eps001"
-  config: configs/rawnet3.yaml
-  attack_model_config: configs/rawnet3.yaml
+  config: configs/adversarial_evaluation/rawnet3.yaml
+  attack_model_config: configs/adversarial_evaluation/rawnet3.yaml
+
+- attack: "PGDL2"
+  config: configs/adversarial_evaluation/rawnet3.yaml
+  attack_model_config: configs/adversarial_evaluation/rawnet3.yaml
+
+- attack: "PGDL2_eps15"
+  config: configs/adversarial_evaluation/rawnet3.yaml
+  attack_model_config: configs/adversarial_evaluation/rawnet3.yaml
+
+- attack: "PGDL2_eps20"
+  config: configs/adversarial_evaluation/rawnet3.yaml
+  attack_model_config: configs/adversarial_evaluation/rawnet3.yaml
 
 - attack: "FAB"
-  config: configs/rawnet3.yaml
-  attack_model_config: configs/rawnet3.yaml
+  config: configs/adversarial_evaluation/rawnet3.yaml
+  attack_model_config: configs/adversarial_evaluation/rawnet3.yaml
 
 - attack: "FAB_eta20"
-  config: configs/rawnet3.yaml
-  attack_model_config: configs/rawnet3.yaml
+  config: configs/adversarial_evaluation/rawnet3.yaml
+  attack_model_config: configs/adversarial_evaluation/rawnet3.yaml
 
 - attack: "FAB_eta30"
-  config: configs/rawnet3.yaml
-  attack_model_config: configs/rawnet3.yaml
+  config: configs/adversarial_evaluation/rawnet3.yaml
+  attack_model_config: configs/adversarial_evaluation/rawnet3.yaml
 
 
 # SpecRNet
 - attack: "NO_ATTACK"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/specrnet.yaml
+  attack_model_config: configs/adversarial_evaluation/specrnet.yaml
 
 - attack: "FGSM"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/specrnet.yaml
+  attack_model_config: configs/adversarial_evaluation/specrnet.yaml
 
 - attack: "FGSM_eps00075"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/specrnet.yaml
+  attack_model_config: configs/adversarial_evaluation/specrnet.yaml
 
 - attack: "FGSM_eps001"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/specrnet.yaml
+  attack_model_config: configs/adversarial_evaluation/specrnet.yaml
 
 - attack: "PGDL2"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/specrnet.yaml
+  attack_model_config: configs/adversarial_evaluation/specrnet.yaml
 
 - attack: "PGDL2_eps15"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/specrnet.yaml
+  attack_model_config: configs/adversarial_evaluation/specrnet.yaml
 
 - attack: "PGDL2_eps20"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/specrnet.yaml
+  attack_model_config: configs/adversarial_evaluation/specrnet.yaml
 
 - attack: "FAB"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/specrnet.yaml
+  attack_model_config: configs/adversarial_evaluation/specrnet.yaml
 
 - attack: "FAB_eta20"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/specrnet.yaml
+  attack_model_config: configs/adversarial_evaluation/specrnet.yaml
 
 - attack: "FAB_eta30"
-  config: configs/lcnn.yaml
-  attack_model_config: configs/lcnn.yaml
+  config: configs/adversarial_evaluation/specrnet.yaml
+  attack_model_config: configs/adversarial_evaluation/specrnet.yaml
