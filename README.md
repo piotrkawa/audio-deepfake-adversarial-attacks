@@ -65,8 +65,10 @@ optional arguments:
   --celeb_path CELEB_PATH
                         Path to FakeAVCeleb dataset directory
   --config CONFIG       Model config file path (default: config.yaml)
-  --amount AMOUNT, -a AMOUNT
-                        Amount of files to load - useful when debugging (default: None - use all).
+  --train_amount TRAIN_AMOUNT, -a TRAIN_AMOUNT
+                        Amount of files to load for training.
+  --test_amount TEST_AMOUNT, -ta TEST_AMOUNT
+                        Amount of files to load for testing.
   --batch_size BATCH_SIZE, -b BATCH_SIZE
                         Batch size (default: 128).
   --epochs EPOCHS, -e EPOCHS
@@ -128,7 +130,12 @@ python train_models_with_adversarial_attacks.py --config {config} --epochs 10 --
 
 Apart from the dependencies mentioned in Attack Agnostic Dataset repository we also include: 
 * [RawNet3 implementation](https://github.com/Jungjee/RawNet), 
-* [Adversarial-Attacks-PyTorch repository](https://github.com/Harry24k/adversarial-attacks-pytorch) - please note that we slightly modified it.
+* [Adversarial-Attacks-PyTorch repository](https://github.com/Harry24k/adversarial-attacks-pytorch) - please note that we slightly modified it. The `adversarial_attacks` source code placed in our repository handles single value outputs and wave inputs, e.g., we create a two element vector based on a single value output as follows:
+```python
+outputs = self.model(images)
+outputs = torch.cat([-outputs, outputs], dim=1)
+```
+Note that only selected adversarial attacks are handled: FGSM, FAB, PGD, PGDL2, OnePixel and CW.
 
 ## Citation
 
