@@ -10,8 +10,9 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from adversarial_attacks_generator import utils
-from adversarial_attacks_generator.attacks import AttackEnum
+from src.aa import utils
+from src.aa.aa_types import AttackEnum
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -191,14 +192,19 @@ class GDTrainer(Trainer):
 
             test_running_loss /= num_total
             test_acc = 100 * (num_correct / num_total)
-            LOGGER.info(f"Epoch [{epoch+1}/{self.epochs}]: test/loss: {test_running_loss}, test/accuracy: {test_acc}, test/eer: {eer_val}")
+            LOGGER.info(
+                f"Epoch [{epoch+1}/{self.epochs}]: "
+                f"test/loss: {test_running_loss}, "
+                f"test/accuracy: {test_acc}, "
+                f"test/eer: {eer_val}"
+            )
 
             if best_model is None or test_acc > best_acc:
                 best_acc = test_acc
                 best_model = deepcopy(model.state_dict())
 
             LOGGER.info(
-                f"[{epoch:04d}]: {running_loss} - train acc: {train_accuracy} - test_acc: {test_acc}")
+                f"Epoch [{epoch:04d}]: loss: {running_loss}, train acc: {train_accuracy}, test_acc: {test_acc}")
 
         model.load_state_dict(best_model)
         return model
@@ -289,9 +295,6 @@ class AdversarialGDTrainer(Trainer):
 
             # Train
             for i, (batch_x, _, batch_y) in enumerate(train_loader):
-                if i % 50 == 0:
-                    lr = scheduler.get_last_lr()[0] if self.use_scheduler else self.optimizer_kwargs["lr"]
-
                 batch_size = batch_x.size(0)
                 num_total += batch_size
 
@@ -370,17 +373,19 @@ class AdversarialGDTrainer(Trainer):
                 test_acc_results.append(adv_test_acc / 100)
 
                 LOGGER.info(
-                    f"Epoch [{epoch+1}/{self.epochs}]: adv_test/{attack_name}__loss: {adv_test_running_loss},"
+                    f"Epoch [{epoch+1}/{self.epochs}]: "
+                    f"adv_test/{attack_name}__loss: {adv_test_running_loss},"
                     f" adv_test/{attack_name}__accuracy: {adv_test_acc},"
                     f" adv_test/{attack_name}__eer: {adv_eer_val}."
                 )
 
             LOGGER.info(
-                f"[{epoch:04d}]: {running_loss} - train acc: {train_accuracy} - test_acc: {test_acc}"
+                f"[{epoch:04d}]: loss {running_loss}, train acc: {train_accuracy}, test_acc: {test_acc}"
             )
 
             test_acc = self.multi_f1_score(test_acc_results)
             LOGGER.info(f"[{epoch:04d}]: multi_f1_score: {test_acc}")
+
             if best_model is None or test_acc > best_acc:
                 best_acc = test_acc
                 best_model = deepcopy(model.state_dict())
@@ -543,7 +548,10 @@ class AdaptiveAdversarialGDTrainer(AdversarialGDTrainer):
             proportion_val * loss + (1-proportion_val) * self.adv_attacks_weights[self.last_adv_attack]
 
         weights_sum = np.sum(self.adv_attacks_weights)
-        self.adv_attacks_weights = [0.5 * (w / weights_sum) + 0.5 * (1.0 / len(self.adv_attacks_weights)) for w in self.adv_attacks_weights]
+        self.adv_attacks_weights = [
+            0.5 * (w / weights_sum) + 0.5 * (1.0 / len(self.adv_attacks_weights))
+            for w in self.adv_attacks_weights
+        ]
 
         if iter is not None and iter % 100 == 0:
             LOGGER.info(f"[{epoch:04d}][{iter:05d}]: Adversarial attack weights: {self.adv_attacks_weights}")
@@ -562,7 +570,12 @@ class AdaptiveV2AdversarialGDTrainer(AdaptiveAdversarialGDTrainer):
         non_attack_ratio = 1/3
         attack_ratio = (2/3) / len(self.attacks)
 
-        self.adv_attacks_weights = [w + 0.5 * attack_ratio if i < len(self.adv_attacks_weights)-1 else w + 0.5 * non_attack_ratio for i, w in enumerate(self.adv_attacks_weights)]
+        self.adv_attacks_weights = [
+            w + 0.5 * attack_ratio
+            if i < len(self.adv_attacks_weights)-1
+            else w + 0.5 * non_attack_ratio
+            for i, w in enumerate(self.adv_attacks_weights)
+        ]
 
         if iter is not None and iter % 100 == 0:
             LOGGER.info(f"[{epoch:04d}][{iter:05d}]: Adversarial attack weights: {self.adv_attacks_weights}")

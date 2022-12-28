@@ -1,5 +1,6 @@
 data:
   seed: 42
+  adversarial_attacks: : []
 
 checkpoint:
   path: ""

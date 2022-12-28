@@ -62,7 +62,6 @@ def evaluate_nn(
         model.load_state_dict(torch.load(model_path))
     model = model.to(device)
 
-
     data_val = get_dataset(
         datasets_paths=datasets_paths,
         amount_to_use=amount_to_use,
@@ -155,6 +154,7 @@ def main(args):
         amount_to_use=args.amount,
         device=device,
     )
+
 
 def parse_args():
     parser = argparse.ArgumentParser()

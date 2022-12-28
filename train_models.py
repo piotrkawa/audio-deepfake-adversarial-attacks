@@ -34,14 +34,14 @@ def save_model(
 
 def get_datasets(
     datasets_paths: List[Union[Path, str]],
-    amount_to_use: Optional[int]
+    amount_to_use: Optional[Tuple[int, int]]
 ) -> Tuple[DetectionDataset, DetectionDataset]:
     data_train = DetectionDataset(
         asvspoof_path=datasets_paths[0],
         wavefake_path=datasets_paths[1],
         fakeavceleb_path=datasets_paths[2],
         subset="train",
-        reduced_number=amount_to_use,
+        reduced_number=amount_to_use[0],
         oversample=True,
     )
     data_test = DetectionDataset(
@@ -49,7 +49,7 @@ def get_datasets(
         wavefake_path=datasets_paths[1],
         fakeavceleb_path=datasets_paths[2],
         subset="test",
-        reduced_number=amount_to_use,
+        reduced_number=amount_to_use[1],
         oversample=True,
     )
 
@@ -63,7 +63,7 @@ def train_nn(
     device: str,
     config: Dict,
     model_dir: Optional[Path] = None,
-    amount_to_use: Optional[int] = None,
+    amount_to_use: Optional[Tuple[int, int]] = None,
     config_save_path: str = "configs",
 ) -> None:
 
@@ -144,7 +144,7 @@ def main(args):
     train_nn(
         datasets_paths=[args.asv_path, args.wavefake_path, args.celeb_path],
         device=device,
-        amount_to_use=args.amount,
+        amount_to_use=(args.train_amount, args.test_amount),
         batch_size=args.batch_size,
         epochs=args.epochs,
         model_dir=model_dir,
@@ -186,13 +186,22 @@ def parse_args():
         default=default_model_config,
     )
 
-    default_amount = None
+    default_train_amount = None
     parser.add_argument(
-        "--amount",
+        "--train_amount",
         "-a",
-        help=f"Amount of files to load - useful when debugging (default: {default_amount} - use all).",
+        help=f"Amount of files to load for training.",
         type=int,
-        default=default_amount,
+        default=default_train_amount,
+    )
+
+    default_test_amount = 10_000
+    parser.add_argument(
+        "--test_amount",
+        "-ta",
+        help=f"Amount of files to load for testing.",
+        type=int,
+        default=default_test_amount,
     )
 
     default_batch_size = 128

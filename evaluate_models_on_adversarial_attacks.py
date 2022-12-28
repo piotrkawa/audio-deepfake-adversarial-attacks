@@ -12,14 +12,12 @@ from sklearn.metrics import precision_recall_fscore_support, roc_auc_score
 from torch import nn
 from torch.utils.data import DataLoader
 
-from adversarial_attacks_generator import utils
-from adversarial_attacks_generator.attacks import AttackEnum
-from adversarial_attacks_generator.qualitative.attacks_analysis import \
-    AttackAnalyser
+from src.aa import utils
+from src.aa.aa_types import AttackEnum
+from src.aa.qualitative.attacks_analysis import AttackAnalyser
 from src.datasets.detection_dataset import DetectionDataset
 from src.metrics import calculate_eer
-from src.models import models
-from src.utils import set_seed
+from src.utils import set_seed, load_model
 
 LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.INFO)
@@ -143,32 +141,6 @@ def main(args):
         on_attack_end_callback=on_attack_end_callback,
         raw_sample_from_dataset=args.raw_from_dataset
     )
-
-def load_model(model_config, device: str = "cuda"):
-    model_name, model_parameters = model_config["model"]["name"], model_config["model"]["parameters"]
-    model_path = model_config["checkpoint"].get("paths")
-
-    model = models.get_model(
-        model_name=model_name, config=model_parameters, device=device,
-    )
-    # If provided weights, apply corresponding ones (from an appropriate fold)
-    if model_path:
-        try:
-            model.load_state_dict(
-                torch.load(model_path)
-            )
-        except RuntimeError:
-            model = nn.DataParallel(model)
-            model.load_state_dict(
-                torch.load(model_path)
-            )
-            model = model.module
-
-        LOGGER.info("Loaded weigths on '%s' model, path: %s", model_name, model_path)
-    model = model.to(device)
-    model.weights_path = model_path
-
-    return model
 
 
 def generate_attacks(
