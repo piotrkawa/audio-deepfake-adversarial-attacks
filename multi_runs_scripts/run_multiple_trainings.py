@@ -23,11 +23,9 @@ if __name__ == "__main__":
     for current_config in configs_to_run:
         command = [
             f"python train_models.py "
-            "--batch_size", "64",
-            "--epochs", "3",
+            "--batch_size", "128",
+            "--epochs", "10",
             f"--config {current_config}",
-            "--amount",
-            "1000"
         ]
 
         command = " ".join(command)
