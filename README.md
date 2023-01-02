@@ -1,6 +1,6 @@
 # Defense against Adversarial Attacks on Audio DeepFake Detection
 
-The following repository contains code for our paper called "Defense against Adversarial Attacks on Audio DeepFake Detection".
+The following repository contains code for our paper called ["Defense against Adversarial Attacks on Audio DeepFake Detection"](https://arxiv.org/abs/2212.14597).
 
 
 We base our codebase on [Attack Agnostic Dataset repo](https://github.com/piotrkawa/attack-agnostic-dataset).
@@ -137,5 +137,14 @@ Apart from the dependencies mentioned in Attack Agnostic Dataset repository we a
 
 If you use this code in your research please use the following citation:
 
-`Coming soon`
+```
+@misc{kawa2022defense,
+    title={Defense Against Adversarial Attacks on Audio DeepFake Detection},
+    author={Piotr Kawa and Marcin Plata and Piotr Syga},
+    year={2022},
+    eprint={2212.14597},
+    archivePrefix={arXiv},
+    primaryClass={cs.SD}
+}
+```
 
