@@ -1,0 +1,17 @@
+data:
+  seed: 42
+  adversarial_attacks:
+    - PGDL2
+    - PGDL2_eps15
+    - PGDL2_eps20
+
+checkpoint:
+  path: "../trained_models/aad__rawnet3_fold_-1__1665328006.207422/ckpt.pth"
+
+model:
+  name: "rawnet3"
+  parameters: {}
+  optimizer:
+    lr: 0.001
+    weight_decay: 0.00005  # 5e-5
+    eta_min: 0.000005  # 5e-6

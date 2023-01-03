@@ -36,12 +36,10 @@ data:
 
 checkpoint: 
   # This part is used only in evaluation 
-  paths: [
-      "trained_models/aad__lcnn/ckpt.pth",
-  ]
+  path: "trained_models/aad__lcnn/ckpt.pth",
 
 model:
-  name: "frontend_lcnn"  # {"frontend_lcnn", "frontend_specrnet", "rawnet3"}
+  name: "lcnn"  # {"lcnn", "specrnet", "rawnet3"}
   parameters:
     input_channels: 1
   optimizer:
@@ -57,7 +55,7 @@ To train models use `train_models.py`.
 
 
 ```
-usage: train_models.py [-h] [--asv_path ASV_PATH] [--wavefake_path WAVEFAKE_PATH] [--celeb_path CELEB_PATH] [--config CONFIG] [--amount AMOUNT] [--batch_size BATCH_SIZE] [--epochs EPOCHS] [--ckpt CKPT] [--cpu] [--verbose] [--use_gmm] [--clusters CLUSTERS] [--lfcc]
+usage: train_models.py [-h] [--asv_path ASV_PATH] [--wavefake_path WAVEFAKE_PATH] [--celeb_path CELEB_PATH] [--config CONFIG] [--amount AMOUNT] [--batch_size BATCH_SIZE] [--epochs EPOCHS] [--ckpt CKPT] [--cpu]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -67,15 +65,16 @@ optional arguments:
   --celeb_path CELEB_PATH
                         Path to FakeAVCeleb dataset directory
   --config CONFIG       Model config file path (default: config.yaml)
-  --amount AMOUNT, -a AMOUNT
-                        Amount of files to load - useful when debugging (default: None - use all).
+  --train_amount TRAIN_AMOUNT, -a TRAIN_AMOUNT
+                        Amount of files to load for training.
+  --test_amount TEST_AMOUNT, -ta TEST_AMOUNT
+                        Amount of files to load for testing.
   --batch_size BATCH_SIZE, -b BATCH_SIZE
                         Batch size (default: 128).
   --epochs EPOCHS, -e EPOCHS
                         Epochs (default: 5).
   --ckpt CKPT           Checkpoint directory (default: trained_models).
   --cpu, -c             Force using cpu?
-  --verbose, -v         Display debug information?
 ```
 
 ## Evaluate models
@@ -111,12 +110,12 @@ python evaluate_models.py --config configs/training/lcnn.yaml --asv_path ../data
 
 Attack LCNN network using white-box setting with FGSM attack:
 ```bash
-python generate_adversarial_samples.py --attack FGSM --config configs/frontend_lcnn.yaml --attack_model_config configs/frontend_lcnn.yaml --no_fold --raw_from_dataset
+python generate_adversarial_samples.py --attack FGSM --config configs/frontend_lcnn.yaml --attack_model_config configs/frontend_lcnn.yaml --raw_from_dataset
 ```
 
 Attack LCNN network using transferability setting with FGSM attack based on RawNet3:
 ```bash
-python generate_adversarial_samples.py --attack FGSM --config configs/frontend_lcnn.yaml --attack_model_config configs/rawnet3.yaml --no_fold --raw_from_dataset
+python generate_adversarial_samples.py --attack FGSM --config configs/frontend_lcnn.yaml --attack_model_config configs/rawnet3.yaml --raw_from_dataset
 ```
 
 ## Adversarial Training
@@ -124,14 +123,19 @@ python generate_adversarial_samples.py --attack FGSM --config configs/frontend_l
 
 Finetune LCNN model for 10 epochs using a `` strategy:
 ```bash
-python train_models_with_adversarial_attacks.py --config {config} --no_fold --epochs 10 --adv_training_strategy {args.adv_training_strategy} --attack_model_config {attack_model_config} --finetune
+python train_models_with_adversarial_attacks.py --config {config} --epochs 10 --adv_training_strategy {args.adv_training_strategy} --attack_model_config {attack_model_config} --finetune
 ```
 
 ## Acknowledgments
 
 Apart from the dependencies mentioned in Attack Agnostic Dataset repository we also include: 
 * [RawNet3 implementation](https://github.com/Jungjee/RawNet), 
-* [Adversarial-Attacks-PyTorch repository](https://github.com/Harry24k/adversarial-attacks-pytorch) - please note that we slightly modified it.
+* [Adversarial-Attacks-PyTorch repository](https://github.com/Harry24k/adversarial-attacks-pytorch) - please note that we slightly modified it. The `adversarial_attacks` source code placed in our repository handles single value outputs and wave inputs, e.g., we create a two element vector based on a single value output as follows:
+```python
+outputs = self.model(images)
+outputs = torch.cat([-outputs, outputs], dim=1)
+```
+Note that only selected adversarial attacks are handled: FGSM, FAB, PGD, PGDL2, OnePixel and CW.
 
 ## Citation
 

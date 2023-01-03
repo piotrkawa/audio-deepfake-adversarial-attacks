@@ -1,0 +1,16 @@
+---
+# FGSM
+- config: configs/finetune/lcnn_fgsm.yaml
+  # attack_model_config: configs/finetune/lcnn_fgsm.yaml
+
+# PGDL2
+- config: configs/finetune/lcnn_pgdl2.yaml
+  # attack_model_config: configs/finetune/lcnn_pgdl2.yaml
+
+# FAB
+- config: configs/finetune/lcnn_fab.yaml
+  # attack_model_config: configs/finetune/lcnn_fab.yaml
+
+# {FAB, FGSM, PGDL2}
+- config: configs/finetune/lcnn_all.yaml
+  # attack_model_config: configs/finetune/lcnn_all.yaml

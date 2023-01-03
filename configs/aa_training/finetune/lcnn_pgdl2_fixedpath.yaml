@@ -1,0 +1,17 @@
+data:
+  seed: 42
+  adversarial_attacks:
+    - PGDL2
+    - PGDL2_eps15
+    - PGDL2_eps20
+
+checkpoint:
+  path: "../trained_models/aad__frontend_lcnn_fold_-1__1665325273.8663843/ckpt.pth"
+
+model:
+  name: "lcnn"
+  parameters:
+    frontend_algorithm: ["lfcc"]
+    input_channels: 1
+  optimizer:
+    lr: 0.0001
