@@ -110,12 +110,12 @@ python evaluate_models.py --config configs/training/lcnn.yaml --asv_path ../data
 
 Attack LCNN network using white-box setting with FGSM attack:
 ```bash
-python generate_adversarial_samples.py --attack FGSM --config configs/frontend_lcnn.yaml --attack_model_config configs/frontend_lcnn.yaml --raw_from_dataset
+python evaluate_models_on_adversarial_attacks.py --attack FGSM --config configs/frontend_lcnn.yaml --attack_model_config configs/frontend_lcnn.yaml --raw_from_dataset
 ```
 
 Attack LCNN network using transferability setting with FGSM attack based on RawNet3:
 ```bash
-python generate_adversarial_samples.py --attack FGSM --config configs/frontend_lcnn.yaml --attack_model_config configs/rawnet3.yaml --raw_from_dataset
+python evaluate_models_on_adversarial_attacks.py --attack FGSM --config configs/frontend_lcnn.yaml --attack_model_config configs/rawnet3.yaml --raw_from_dataset
 ```
 
 ## Adversarial Training
