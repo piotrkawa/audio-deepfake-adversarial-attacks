@@ -1,7 +1,8 @@
 # Defense against Adversarial Attacks on Audio DeepFake Detection
 
-The following repository contains code for our paper called ["Defense against Adversarial Attacks on Audio DeepFake Detection"](https://arxiv.org/abs/2212.14597).
+The following repository contains code for our paper called "Defense against Adversarial Attacks on Audio DeepFake Detection".
 
+The paper is available [here](https://www.isca-speech.org/archive/interspeech_2023/kawa23_interspeech.html).
 
 We base our codebase on [Attack Agnostic Dataset repo](https://github.com/piotrkawa/attack-agnostic-dataset).
 
@@ -10,7 +11,6 @@ You can find demo samples [here](https://piotrkawa.github.io/papers/adversarial_
 
 ## Before you start
 
-
 ### Datasets
 
 Download appropriate datasets:
@@ -18,7 +18,6 @@ Download appropriate datasets:
 * [ASVspoof2021 DF subset](https://zenodo.org/record/4835108),
 * [FakeAVCeleb](https://github.com/DASH-Lab/FakeAVCeleb#access-request-form),
 * [WaveFake](https://zenodo.org/record/5642694) (along with JSUT and LJSpeech).
-
 
 
 ### Dependencies
@@ -142,13 +141,13 @@ Note that only selected adversarial attacks are handled: FGSM, FAB, PGD, PGDL2, 
 If you use this code in your research please use the following citation:
 
 ```
-@misc{kawa2022defense,
-    title={Defense Against Adversarial Attacks on Audio DeepFake Detection},
-    author={Piotr Kawa and Marcin Plata and Piotr Syga},
-    year={2022},
-    eprint={2212.14597},
-    archivePrefix={arXiv},
-    primaryClass={cs.SD}
+@inproceedings{kawa23_interspeech,
+  author={Piotr Kawa and Marcin Plata and Piotr Syga},
+  title={{Defense Against Adversarial Attacks on Audio DeepFake Detection}},
+  year=2023,
+  booktitle={Proc. INTERSPEECH 2023},
+  pages={5276--5280},
+  doi={10.21437/Interspeech.2023-409}
 }
 ```
 
