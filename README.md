@@ -15,7 +15,7 @@ You can find demo samples [here](https://piotrkawa.github.io/papers/adversarial_
 
 Download appropriate datasets:
 
-* [ASVspoof2021 DF subset](https://zenodo.org/record/4835108) (**Please note:** we use [this keys&metadata file](https://www.asvspoof.org/resources/DF-keys-stage-1.tar.gz)),,
+* [ASVspoof2021 DF subset](https://zenodo.org/record/4835108) (**Please note:** we use [this keys&metadata file](https://www.asvspoof.org/resources/DF-keys-stage-1.tar.gz)),
 * [FakeAVCeleb](https://github.com/DASH-Lab/FakeAVCeleb#access-request-form),
 * [WaveFake](https://zenodo.org/record/5642694) (along with JSUT and LJSpeech).
 
